@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Example_Compost_App",
+    "slug": "Example_Compost_App",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "primaryColor": "#FFFFFF",
+    "icon": "./assets/images/Example_Logo_square.png",
+    "splash": {
+      "image": "./assets/images/Example_Logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "assets/fonts/*.ttf",
+      "assets/images/*.png",
+      "assets/images/House_logos/*.png",
+      "assets/images/Icons/*.png",
+      "assets/images/Photos/*.png",
+      "assets/images/Quiz/*.png",
+      "assets/videos/*.mp4"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app can use the camera to scan QR codes."
+      },
+      "bundleIdentifier": "com.qut.examplecompostapp",
+      "buildNumber": "1.0.0",
+      "icon": "./assets/images/app_icon_ios.png"
+    },
+    "description": "An example compost app.",
+    "android": {
+      "permissions": [
+        "CAMERA"
+      ],
+      "package": "com.qut.examplecompostapp",
+      "versionCode": 1,
+      "icon": "./assets/images/app_icon_android_foreground.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/app_icon_android_foreground.png"
+      }
+    }
+  }
+}
