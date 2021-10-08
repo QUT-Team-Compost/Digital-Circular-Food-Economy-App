@@ -4,7 +4,7 @@
 import {
     sharedStyles,
     CONTENT_TYPES,
-  } from '../components/SharedComponents.js';
+} from '../components/SharedComponents.js';
 
 import React from 'react';
 import { Text, Linking } from 'react-native';

@@ -61,26 +61,25 @@ export function HouseScores({navigation, route}) {
 
     // Attempt to get permission to use the camera to scan a QR code.
     useEffect(() => {
-      (async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync();
-        setHasPermission(status === 'granted');
-      })();
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
 
-      // Have the user scan again if they focus on the screen again.
-      // Reload data when the user focuses on the screen again.
-      const willFocusSubscription = navigation.addListener("focus", () => {
-        setScannedCode("");
-      })
-      return willFocusSubscription;
-
+        // Have the user scan again if they focus on the screen again.
+        // Reload data when the user focuses on the screen again.
+        const willFocusSubscription = navigation.addListener("focus", () => {
+            setScannedCode("");
+        })
+        return willFocusSubscription;
     }, []);
 
     // Handle when a QR code is scanned.
     const handleBarCodeScanned = ({ type, data }) => {
-      if(scannedCode !== data) {
-        setScannedCode(data);
-        dprint("HouseScores: Scanned in " + data);
-      } 
+        if(scannedCode !== data) {
+            setScannedCode(data);
+            dprint("HouseScores: Scanned in " + data);
+        } 
     };
 
     // Before permission has been granted or denied, show a message showing
@@ -91,7 +90,7 @@ export function HouseScores({navigation, route}) {
                 <Text style={sharedStyles.bannerText}>Waiting to see if we have permission to use your device's camera...</Text>
             </View>
         );
-      }
+    }
 
     // If permission was denied, show a message saying so.
     if (hasPermission === false) {
@@ -142,9 +141,8 @@ export function HouseScores({navigation, route}) {
 // score: The house's current score.
 export class HouseScoreGraph extends Component {
     state = {
-        houses: -1,
         scores: -1,
-      }
+    }
 
     // When the component is rendered, get the data to display in the graph.
     componentDidMount() {
@@ -165,8 +163,8 @@ export class HouseScoreGraph extends Component {
         // Otherwise, attempt to download the scores from the cloud server.
         // If there's an error, the scores are set to null.
         } else {
-            dprint("SensorScreen: running componentDidMount() for non-test data");
-            dprint("Server URL is " + SERVER_BASE_URL);
+            dprint("HouseScores: running componentDidMount() for non-test data");
+            dprint("HouseScores: Server URL is " + SERVER_BASE_URL);
             axios.get(SERVER_BASE_URL + '/getHouseScores', {}, {
                 headers: {
                     'Content-Type': 'application/json', 'Accept': 'application/json',
@@ -180,14 +178,16 @@ export class HouseScoreGraph extends Component {
                             return {
                             scores: null,
                             }
-                        })
+                        });
+                        return null;
                     } else {   
                         dprint("HouseScoreGraph: Successfully retrieved house scores");
                         this.setState(state => {
                             return {
                             scores: response.data.houses,
                             }
-                        })
+                        });
+                        return null;
                     }
                 })
                 .catch((error) => {
@@ -198,9 +198,10 @@ export class HouseScoreGraph extends Component {
                         scores: null,
                         }
                     });
+                    return null;
                 });
             }
-    }    
+    }
     
     // Render this component.
     render() {
@@ -215,45 +216,60 @@ export class HouseScoreGraph extends Component {
             </View>);
         }
 
-        // If the scores are null or have no contents, show that they couldn't
-        // be loaded.
-        if (this.state.scores === null || this.state.scores.length < 1) {
+        // If the scores are null or are not the expected number of houses,
+        // show that they couldn't be loaded.
+        if (this.state.scores === null || this.state.scores.length !== houses.length) {
             return(<View style={sharedStyles.standardContainer}>
                 <Text style={sharedStyles.bannerText}>We couldn't load the house scores right now. Please try again later!</Text>
             </View>);
+        }
+
+        // If the scores are not formed correctly, also show that they couldn't
+        // be loaded.
+        for (var score of this.state.scores) {
+            if (score.id === undefined || score.score === undefined) {
+
+                // Force a reload of the page by setting scores to null.
+                dprint("HouseScoreGraph: Did not receive correct scores data from the database.") 
+                this.setState(state => {
+                    return {
+                    scores: null,
+                    }
+                })
+                return null;
+            }
+        }
 
         // Otherwise, show the house scores that were loaded.
-        } else {
-            // Create the array of graph data, including what colours each bar
-            // should be.
-            var graphData = [];
-            for (var house of houses) {
-                graphData.push(
-                    {
-                        value: this.state.scores.find(data => data.id === house.id).score,
-                        svg: {
-                            fill: house.colour
-                        }
+        // Create the array of graph data, including what colours each bar
+        // should be.
+        var graphData = [];
+        for (var house of houses) {
+            graphData.push(
+                {
+                    value: this.state.scores.find(data => data.id === house.id).score,
+                    svg: {
+                        fill: house.colour
                     }
-                )
-            }
-
-            // Render the graph using the VerticalBarChart component. Also
-            // creates a row of house logoes underneath the graph.
-            return(<View style={sharedStyles.standardContainer}>
-                <Text style={sharedStyles.bannerText}>Here are the current scores for each of the houses:</Text>
-                <VerticalBarChart data={graphData} height={Dimensions.get('window').height * 0.6}/>
-                <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
-                    {houses.map(house => (<Image source={house.image}style={{ width: "25%", height: 60, resizeMode: 'contain', }} />))}
-                </View>
-            </View>);
+                }
+            )
         }
+
+        // Render the graph using the VerticalBarChart component. Also
+        // creates a row of house logoes underneath the graph.
+        return(<View style={sharedStyles.standardContainer}>
+            <Text style={sharedStyles.bannerText}>Here are the current scores for each of the houses:</Text>
+            <VerticalBarChart data={graphData} height={Dimensions.get('window').height * 0.6}/>
+            <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
+                {houses.map(house => (<Image source={house.image}style={{ width: "25%", height: 60, resizeMode: 'contain', }} />))}
+            </View>
+        </View>);
     }
 }
 
 // Styles used only in this script.
 const styles = StyleSheet.create({
-    scannerContainer: {        
+    scannerContainer: {
         justifyContent: 'center',
         alignItems: 'center',
     },

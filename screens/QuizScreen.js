@@ -11,7 +11,7 @@ import { Component } from 'react';
 
 // The questions that can be used in the quiz. This is an array of objects,
 // each with the following properties:
-// item: A unique identifier for the question.
+// id: A unique identifier for the question.
 // title: The text of the question itself, used both on the question screen
 //      and when showing the answers.
 // answers: An array of objects for each answer for the question. There should
@@ -26,8 +26,6 @@ import { Component } from 'react';
 // Optionally, a question can also have:
 // image: An image (given through a require statement) that will be shown along
 //      with the question.
-// There should be at least five questions to randomly select from, unless the
-// variable totalQuestions is modified to change the number.
 const questionList =  [
     // Question with two possible answers and one correct one.
     {
@@ -188,6 +186,16 @@ class Quiz extends Component {
     // Possibilities for rendering the component.
     render() {
 
+        // If no random questions were selected, we cannot show a quiz.
+        if (this.state.userAnswers === undefined || this.state.userAnswers === []) {
+            dprint("Quiz: No questions were chosen for the quiz.")
+            return (<View style={sharedStyles.infoContainer}>
+                <View style={styles.startContainer}>
+                    <Text style={sharedStyles.bannerText}>No quiz questions were selected randomly! If you're seeing this, this is an issue that the people who made this app need to fix.</Text>
+                </View>
+            </View>)
+        }
+
         // If we are at the end of the questions, show the results informing
         // them of how many they got right.
         if (this.state.currentQuestionIndex === totalQuestions) {
@@ -198,7 +206,7 @@ class Quiz extends Component {
             for (var response of this.state.userAnswers) {
 
                 // Get the question from the question list.
-                var question = questionList.filter(obj => { return obj.item === response.item })[0];
+                var question = questionList.filter(obj => { return obj.id === response.id })[0];
                 var userCorrect = false;
                 var answerString = undefined;
                 var userAnswerString = undefined;
@@ -234,7 +242,7 @@ class Quiz extends Component {
                         title: question.title,
                         explanation: question.explanation,
                         wasCorrect: true,
-                        item: question.item,
+                        id: question.id,
                         answer: answerString,
                         userAnswer: userAnswerString,
                     });
@@ -243,7 +251,7 @@ class Quiz extends Component {
                         title: question.title,
                         explanation: question.explanation,
                         wasCorrect: false,
-                        item: question.item,
+                        id: question.id,
                         answer: answerString,
                         userAnswer: userAnswerString,
                     });
@@ -258,7 +266,7 @@ class Quiz extends Component {
                 <></>
                 <Text style={styles.scoreHeader}>You got {correctAnswers} {correctAnswers == 1 ? "question" : "questions"} correct!</Text>
             </View>
-            {explanations.map(explanation => (<View key={explanation.item} style={styles.explanationContainer}>
+            {explanations.map(explanation => (<View key={explanation.id} style={styles.explanationContainer}>
                 <Text style={styles.explanationHeader}>{explanation.title}</Text>
                 {explanation.wasCorrect ?
                     <Text style={styles.explanationHeaderCorrect}>You got this question correct</Text> :
@@ -288,7 +296,7 @@ class Quiz extends Component {
 
             // Get the question we are currently on.
             var userAnswer = this.state.userAnswers[this.state.currentQuestionIndex];
-            var currentQuestion = questionList.filter(obj => { return obj.item === userAnswer.item })[0];
+            var currentQuestion = questionList.filter(obj => { return obj.id === userAnswer.id })[0];
 
             // Return the elements for the screen.
             return (<View style={sharedStyles.infoContainer}>
@@ -351,7 +359,7 @@ class Quiz extends Component {
         } else {
             return (<View style={sharedStyles.infoContainer}>
             <View style={styles.startContainer}>
-                <Text style={sharedStyles.bannerText}>If you want to test your knowledge about composting, you can take a go at this quiz! There will be five questions selected at random.</Text>
+                <Text style={sharedStyles.bannerText}>If you want to test your knowledge about composting, you can take a go at this quiz! There will be {totalQuestions} questions selected at random.</Text>
             </View>
             {/* A button for proceeding to the rest of the quiz.*/}
             <TouchableHighlight
@@ -374,6 +382,58 @@ class Quiz extends Component {
 
 // The main quiz screen component, containing the above Quiz component.
 export default function QuizScreen( {navigation, route} ) {
+
+    // Check if there's any quiz questions avaible to pick - if not, show an
+    // error message.
+    if (questionList === undefined || questionList.length < 1) {
+        dprint("QuizScreen: No questions available to choose from.")
+        return (
+        <View style={sharedStyles.standardContainer}>
+                <View style={styles.startContainer}>
+                    <Text style={sharedStyles.bannerText}>There are no quiz questions available! If you're seeing this, this is an issue that the people who made this app need to fix.</Text>
+                </View>
+        </View>
+        )
+    }
+
+    // Check if all possible quiz questions have the correct properties - if
+    // not, show an error message.
+    for (var question of questionList) {
+
+        // Whether the current question is valid.
+        var valid = true;
+
+        // If the current question does not have id, title, answers or
+        // explanation defined, the question is not valid.
+        // Answers must also be an array.
+        if (question.id === undefined ||
+            question.title === undefined ||
+            question.answers === undefined ||
+            question.answers.length < 1 ||
+            question.explanation === undefined) {
+            valid = false;
+        }
+        // If at least one of the answers does not have id, text or correct
+        // defined, the question is not valid.
+        // Correct must also be true or false.
+        for (var answer of question.answers) {
+            if (answer.id === undefined ||
+                answer.text === undefined ||
+                (answer.correct !== true && answer.correct !== false)) {
+                valid = false;
+            }
+        }
+        if (valid = false) {
+            dprint("QuizScreen: At least one question is not formed correctly.")
+            return (
+            <View style={sharedStyles.standardContainer}>
+                    <View style={styles.startContainer}>
+                        <Text style={sharedStyles.bannerText}>At least one of the possible quiz questions isn't configured correctly. If you're seeing this, this is an issue that the people who made this app need to fix.</Text>
+                    </View>
+            </View>
+            )
+        }
+    }
 
     return (
     <View style={sharedStyles.standardContainer}>
@@ -401,15 +461,29 @@ function getRandom(arr, n) {
 }
 
 // Creates an array of random quiz questions.
+// Uses the totalQuestions variable to limit the number of quiz questions to
+// pick, though if there are less quiz questions available, it will use all
+// of them.
+// Returns an empty array if there were no quiz questions at all to choose
+// from.
 function generateQuizQuestions() {
-    var randomQuestions = getRandom(questionList, totalQuestions);
 
     // Array for passing the questions to the special component
     var userAnswers = [];
 
-    for (var question of randomQuestions) {
-        userAnswers.push({ item: question.item, userAnswer: null });
+    // Random questions can only be picked if questionList exists and has at
+    // least one question.
+    if (questionList !== undefined && questionList.length > 0) {
+        // Get a list of random questions.
+        var randomQuestions = getRandom(questionList, Math.min(totalQuestions, questionList.length));    
+
+        // Add the randomised questions to the array to return.
+        for (var question of randomQuestions) {
+            userAnswers.push({ id: question.id, userAnswer: null });
+        }
     }
+
+    // Return the list of answers.
     return userAnswers;
 }
 
@@ -475,4 +549,4 @@ const styles = StyleSheet.create({
       fontSize: 17,
       marginBottom: 2,
     },
-  });
+});

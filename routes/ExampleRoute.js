@@ -5,7 +5,7 @@ import {
     sharedStyles,
     CONTENT_TYPES,
     CollapsibleList,
-  } from '../components/SharedComponents.js';
+} from '../components/SharedComponents.js';
 
 import React from 'react';
 import { Dimensions, Text } from 'react-native';

@@ -27,85 +27,85 @@ import {DEBUG} from "@env"
 // Styles that are used in many places throughout the app.
 export const sharedStyles = StyleSheet.create({
     pageHeader: {
-      backgroundColor: '#ea0029',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-evenly',
+        backgroundColor: '#ea0029',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-evenly',
     },
-    pageHeaderText: {    
-      color: 'white',
-      textAlign: 'center',
-      fontSize: 18,
-      paddingTop: 10,
-      paddingBottom: 10,
+    pageHeaderText: {
+        color: 'white',
+        textAlign: 'center',
+        fontSize: 18,
+        paddingTop: 10,
+        paddingBottom: 10,
     },
-    pageHeaderBackButton: {    
+    pageHeaderBackButton: {
         color: 'white',
         textAlign: 'center',
         fontSize: 18,
     },
     infoMainPointText: {
-      fontSize: 17,
-      color: 'black',
-      marginBottom: 5,
+        fontSize: 17,
+        color: 'black',
+        marginBottom: 5,
     },
     infoSubPointText: {
-      color: 'black',
-      fontSize: 14,
-      marginBottom: 5,
+        color: 'black',
+        fontSize: 14,
+        marginBottom: 5,
     },
     standardContainer: {
-      flex: 1,
+        flex: 1,
     },
     infoContentContainer: {
-      paddingTop: 10,
+        paddingTop: 10,
     },
     infoContainer: {
-      textAlign: 'left',
-      padding: 20,
+        textAlign: 'left',
+        padding: 20,
     },
     backgroundImage: {
-      flex: 1,
-      resizeMode: "cover",
-      justifyContent: "center"
+        flex: 1,
+        resizeMode: "cover",
+        justifyContent: "center"
     },
     imageCaption: {
-      color: 'black',
-      fontSize: 15,
-      fontStyle: 'italic',
-      textAlign: 'center',
-      marginBottom: 7,
+        color: 'black',
+        fontSize: 15,
+        fontStyle: 'italic',
+        textAlign: 'center',
+        marginBottom: 7,
     },
     diagramImage: {
-      width: 300,
-      resizeMode: 'contain',
+        width: 300,
+        resizeMode: 'contain',
     },
     buttonText: {
-      backgroundColor: "#00A000",
-      color: "white",
-      fontSize: 15,
-      textAlign: 'center',
-      borderRadius: 5,
-      borderWidth: 5,
-      borderColor: "#008000",
-      paddingTop: 10,
-      paddingLeft: 5,
-      paddingBottom: 3,
-      paddingRight: 5,
+        backgroundColor: "#00A000",
+        color: "white",
+        fontSize: 15,
+        textAlign: 'center',
+        borderRadius: 5,
+        borderWidth: 5,
+        borderColor: "#008000",
+        paddingTop: 10,
+        paddingLeft: 5,
+        paddingBottom: 3,
+        paddingRight: 5,
     },
     boldText: {
-      fontWeight: 'bold'
+        fontWeight: 'bold'
     },
     titleText: {
-      fontSize: 25,
-      color: 'black',
+        fontSize: 25,
+        color: 'black',
     },
     roundTextInput: {
         textAlign: 'center',
         height: 40,
         borderWidth: 2,
         borderColor: 'black',
-        borderRadius: 20,        
+        borderRadius: 20,
         color: 'black',
         margin: 5,
         fontSize: 20,
@@ -138,18 +138,18 @@ export const sharedStyles = StyleSheet.create({
         }),
     },
     linkText: {
-      color: "blue",
-      textDecorationLine: "underline",
+        color: "blue",
+        textDecorationLine: "underline",
     },
     contentContainer: {
-      paddingTop: 30,
-    },    
-    bannerText: {
-      fontSize: 17,
-      lineHeight: 24,
-      textAlign: 'center',
+        paddingTop: 30,
     },
-  });
+    bannerText: {
+        fontSize: 17,
+        lineHeight: 24,
+        textAlign: 'center',
+    },
+});
 
 // Allows printing to the console under debugging conditions, by setting the
 // following variable to true.
@@ -164,11 +164,11 @@ export function dprint(message) {
 // Constant array representing valid "types" for the information arrays used to
 // generate content in InfoScreen and InfoContent.
 export const CONTENT_TYPES = {
-  IMAGE: "image",             // Image component inside a centred View component
-  BULLETPOINT: "bulletpoint", // Text component inside an Unorderedlist component
-  TEXT: "text",               // Text component
-  VIDEO: "video",             // Video component using expo-av
-  AUTOIMAGE: "autoImage",     // Uses the AutoHeightImage library to set an image to a specific percentage width while preserving correct aspect ratio
+    IMAGE: "image",             // Image component inside a centred View component
+    BULLETPOINT: "bulletpoint", // Text component inside an Unorderedlist component
+    TEXT: "text",               // Text component
+    VIDEO: "video",             // Video component using expo-av
+    AUTOIMAGE: "autoImage",     // Uses the AutoHeightImage library to set an image to a specific percentage width while preserving correct aspect ratio
 }
 
 // Creates the correct components from an array of content passed as a prop.
@@ -197,80 +197,79 @@ export function InfoContent (props) {
   // that it stops when the screen is not in focus, and starts when it is.
   useEffect(() => {
         if (props.navigation) {
-          const stopVideo = props.navigation.addListener("blur", () => {
-          if (video.current) {
-            video.current.stopAsync();
-          }
-          });
+            const stopVideo = props.navigation.addListener("blur", () => {
+                if (video.current) {
+                    video.current.stopAsync();
+                }
+            });
 
-          const startVideo = props.navigation.addListener("focus", () => {
-          if (video.current) {
-            video.current.playAsync();
-          }
-          });
+            const startVideo = props.navigation.addListener("focus", () => {
+                if (video.current) {
+                    video.current.playAsync();
+                }
+            });
         }
-      }, [props.navigation]);
+    }, [props.navigation]);
 
     //https://stackoverflow.com/a/46593006
     // Create different elements for the page depending on the type of content.
     function renderSwitch(item) {
-      switch (item.type) {
+        switch (item.type) {
 
-        // For an image...
-        case CONTENT_TYPES.IMAGE:
-          return (<View key={item.id} style={{alignItems: "center"}}><Image source={item.contents} style={item.style}/></View>);
-          break;
+            // For an image...
+            case CONTENT_TYPES.IMAGE:
+                return (<View key={item.id} style={{alignItems: "center"}}><Image source={item.contents} style={item.style}/></View>);
+                break;
 
-        // For bullet pointed text...
-        case CONTENT_TYPES.BULLETPOINT:
-          return (<Unorderedlist key={item.id}><Text style={item.style}>{item.contents}</Text></Unorderedlist>);
-          break;
+            // For bullet pointed text...
+            case CONTENT_TYPES.BULLETPOINT:
+                return (<Unorderedlist key={item.id}><Text style={item.style}>{item.contents}</Text></Unorderedlist>);
+                break;
 
-        // For regular text...
-        case CONTENT_TYPES.TEXT:
-          return (<Text key={item.id} style={item.style}>{item.contents}</Text>);
-          break;
+            // For regular text...
+            case CONTENT_TYPES.TEXT:
+                return (<Text key={item.id} style={item.style}>{item.contents}</Text>);
+                break;
 
-        // For a video...
-        case CONTENT_TYPES.VIDEO:
-          return (
-          <View key={item.id} style={{alignItems: "center"}}>
-            <Video
-              key={0}
-              source={item.contents}
-              rate={1.0}
-              volume={1.0}
-              isMuted={false}
-              resizeMode="cover"
-              shouldPlay
-              isLooping={false}
-              style={Platform.OS === 'web' ? [item.style, {maxWidth: '512px', maxHeight: '288px'}] : item.style}
-              useNativeControls={true}
-              ref={_handleVideoRef}
-              //ref={setVideo}
-            />
-          </View>
-          );
-          break;
+            // For a video...
+            case CONTENT_TYPES.VIDEO:
+                return (
+                    <View key={item.id} style={{alignItems: "center"}}>
+                        <Video
+                            key={0}
+                            source={item.contents}
+                            rate={1.0}
+                            volume={1.0}
+                            isMuted={false}
+                            resizeMode="cover"
+                            shouldPlay
+                            isLooping={false}
+                            style={Platform.OS === 'web' ? [item.style, {maxWidth: '512px', maxHeight: '288px'}] : item.style}
+                            useNativeControls={true}
+                            ref={_handleVideoRef}
+                        />
+                    </View>
+                );
+                break;
 
-        // For an image that should automatically be sized...
-        case CONTENT_TYPES.AUTOIMAGE:
-          return (<View key={item.id} style={{alignItems: "center"}}><WrappedAutoHeightImage style={item.style} source={item.contents}/></View>)
-          break;
+            // For an image that should automatically be sized...
+            case CONTENT_TYPES.AUTOIMAGE:
+                return (<View key={item.id} style={{alignItems: "center"}}><WrappedAutoHeightImage style={item.style} source={item.contents}/></View>)
+                break;
 
-        // If the content does not have a valid type, put it in a view for
-        // rendering.
-        default:
-          return (<View key={item.id} style={item.style}>{item.contents}</View>);
-          break;
-      }
+            // If the content does not have a valid type, put it in a view for
+            // rendering.
+            default:
+                return (<View key={item.id} style={item.style}>{item.contents}</View>);
+                break;
+        }
     }
     
     // Return the correct element.
     return (
-      <>{contents.map(item => (
-        renderSwitch(item)
-      ))}</>
+        <>{contents.map(item => (
+            renderSwitch(item)
+        ))}</>
     )
 }
 
@@ -290,16 +289,16 @@ export function InfoContent (props) {
 // InfoContent component.
 export function InfoScreen( {navigation, route} ) {
 
-  return (
-  <View style={sharedStyles.standardContainer}>
-      <ScrollView style={sharedStyles.standardContainer} contentContainerStyle={sharedStyles.infoContentContainer}>
-        <View style={sharedStyles.infoContainer}>
-          <InfoContent contents={route.params.contents} navigation={navigation} key={route.params.key} keyProp={route.params.key}/>
-          {route.params.extra_components && route.params.extra_components.map((component, index) => (component))}
-        </View>
-      </ScrollView>
-  </View>
-  )
+    return (
+    <View style={sharedStyles.standardContainer}>
+        <ScrollView style={sharedStyles.standardContainer} contentContainerStyle={sharedStyles.infoContentContainer}>
+            <View style={sharedStyles.infoContainer}>
+                <InfoContent contents={route.params.contents} navigation={navigation} key={route.params.key} keyProp={route.params.key}/>
+                {route.params.extra_components && route.params.extra_components.map((component, index) => (component))}
+            </View>
+        </ScrollView>
+    </View>
+    )
 }
 
 // Shows an error message, also printing it to the console if debugging is
@@ -309,47 +308,47 @@ export function InfoScreen( {navigation, route} ) {
 //          if the second paramter is true.
 // - axois: True if an error from Axios, false otherwise.
 export function displayErrorMessage(error, axios) {
-  if (axios) {
-    if (error.response) {
-      // Request made and server responded
-      dprint(error.response.data);
-      dprint(error.response.status);
-      dprint(error.response.headers);
-      showMessage({
-          message: error.response.data.message,
-          type: "danger",
-          //autoHide: false,
-          duration: 5000,
-      });
-    } else if (error.request) {
-      // The request was made but no response was received
-      dprint(error.request);
-      showMessage({
-          message: "We could not access the server right now to get information to show you.\n Have another go later!",
-          type: "danger",
-          //autoHide: false,
-          duration: 5000,
-      });
+    if (axios) {
+        if (error.response) {
+          // Request made and server responded
+            dprint(error.response.data);
+            dprint(error.response.status);
+            dprint(error.response.headers);
+            showMessage({
+                message: error.response.data.message,
+                type: "danger",
+                //autoHide: false,
+                duration: 5000,
+            });
+        } else if (error.request) {
+            // The request was made but no response was received
+            dprint(error.request);
+            showMessage({
+                message: "We could not access the server right now to get information to show you.\n Have another go later!",
+                type: "danger",
+                //autoHide: false,
+                duration: 5000,
+            });
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            dprint(error.message);
+            dprint(error.stack);
+            showMessage({
+                message: "An error occured while trying to access the server to get information to show you: " + error.message + "\n Have another go later!",
+                type: "danger",
+                //autoHide: false,
+                duration: 5000,
+            });
+        }
     } else {
-      // Something happened in setting up the request that triggered an Error
-      dprint(error.message);
-      dprint(error.stack);
-      showMessage({
-          message: "An error occured while trying to access the server to get information to show you: " + error.message + "\n Have another go later!",
-          type: "danger",
-          //autoHide: false,
-          duration: 5000,
-      });
+        dprint(error);
+        showMessage({
+            message: error,
+            type: "danger",
+            //autoHide: false,
+            duration: 5000,
+        });
     }
-  } else {
-    dprint(error);
-    showMessage({
-        message: error,
-        type: "danger",
-        //autoHide: false,
-        duration: 5000,
-    });
-  }
 }
 
 //Modified from https://github.com/JesperLekland/react-native-svg-charts-examples/blob/master/storybook/stories/bar-chart/vertical-with-labels.js
@@ -403,62 +402,62 @@ export { VerticalBarChart };
 
 // Styles specifically used to create the collapsible list component.
 const CL_styles = StyleSheet.create({
-  CL_roundButton: {
-      backgroundColor: "#ea0029",
-      borderRadius: 20,
-      borderWidth: 5,
-      borderColor: "#ce0025",
-      minHeight: 40,
-      margin: 5,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-  },
-  CL_roundButtonSelected: {
-      backgroundColor: "#FB113A",
-      borderRadius: 20,
-      borderWidth: 5,
-      borderColor: "#DF1136",
-      minHeight: 40,
-      margin: 5,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-  },
-  CL_content: {
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  CL_active: {
-    backgroundColor: 'rgba(255,255,255,1)',
-  },
-  CL_inactive: {
-    backgroundColor: 'rgba(245,252,255,1)',
-  },
-  CL_imageIcon: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
-    marginLeft: 10,
-    marginRight: 10,
-    flex: 1,
-  },
-  CL_roundButtonText: {
-      color: "white",
-      fontSize: 20,
-      textAlign: 'center',
-      flex: 6,
-      ...Platform.select({
-        android: {
-          textAlignVertical: 'center',
-        },
-        ios: {
-          lineHeight: 40,
-        },
-      }),
-  },
-  CL_roundButtonChild: {
-    flexDirection: 'row',
-    flex: 7,
-  }
+    CL_roundButton: {
+        backgroundColor: "#ea0029",
+        borderRadius: 20,
+        borderWidth: 5,
+        borderColor: "#ce0025",
+        minHeight: 40,
+        margin: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    CL_roundButtonSelected: {
+        backgroundColor: "#FB113A",
+        borderRadius: 20,
+        borderWidth: 5,
+        borderColor: "#DF1136",
+        minHeight: 40,
+        margin: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    CL_content: {
+        padding: 20,
+        backgroundColor: '#fff',
+    },
+    CL_active: {
+        backgroundColor: 'rgba(255,255,255,1)',
+    },
+    CL_inactive: {
+        backgroundColor: 'rgba(245,252,255,1)',
+    },
+    CL_imageIcon: {
+        width: 30,
+        height: 30,
+        resizeMode: 'contain',
+        marginLeft: 10,
+        marginRight: 10,
+        flex: 1,
+    },
+    CL_roundButtonText: {
+        color: "white",
+        fontSize: 20,
+        textAlign: 'center',
+        flex: 6,
+        ...Platform.select({
+          android: {
+            textAlignVertical: 'center',
+          },
+          ios: {
+            lineHeight: 40,
+          },
+        }),
+    },
+    CL_roundButtonChild: {
+        flexDirection: 'row',
+        flex: 7,
+    }
 })
 
 // Based on https://github.com/oblador/react-native-collapsible/blob/master/Example/App.js
@@ -494,76 +493,83 @@ class CollapsibleList extends Component {
     // If elements were passed in, use them, otherwise prepare what was passed
     // as data.
     getContent = (rawContent) => {
-      var content = [];
+        var content = [];
         for (var rawSection of rawContent) {
-          var section = {}
+            var section = {}
 
-          // If an element was passed for the title of this list item, use
-          // that.
-          if (React.isValidElement(rawSection.title)) {
-            section.title = rawSection.title;
-          }
+            // If an element was passed for the title of this list item, use
+            // that.
+            if (React.isValidElement(rawSection.title)) {
+                section.title = rawSection.title;
+            }
 
-          // If an icon was included for the title of this list item, create a
-          // title element that includes an icon.
-          else if (rawSection.title.icon !== undefined) {
-            section.title = (
-              <View style={CL_styles.CL_roundButtonChild}>
-                  <Image
-                      source={rawSection.title.icon}
-                      style={CL_styles.CL_imageIcon}
-                  />
-                  <Text style={CL_styles.CL_roundButtonText}>{rawSection.title.text}</Text>
-              </View>);
-          }
+            // If an icon was included for the title of this list item, create a
+            // title element that includes an icon.
+            else if (rawSection.title.icon !== undefined) {
+                section.title = (
+                    <View style={CL_styles.CL_roundButtonChild}>
+                        <Image
+                            source={rawSection.title.icon}
+                            style={CL_styles.CL_imageIcon}
+                        />
+                        <Text style={CL_styles.CL_roundButtonText}>{rawSection.title.text}</Text>
+                    </View>
+                );
+            }
 
-          // Otherwise, if it is just text, create a title element with only
-          // text.
-          else if (typeof rawSection.title.text === "string" || typeof rawSection.title === "string") {
-            var title = rawSection.title.text !== undefined ? rawSection.title.text : rawSection.title;
-            section.title = (
-              <View>
-                <Text style={CL_styles.CL_roundButtonText}>{title}</Text>
-              </View>);
-          }
+            // Otherwise, if it is just text, create a title element with only
+            // text.
+            else if (typeof rawSection.title.text === "string" || typeof rawSection.title === "string") {
+                var title = rawSection.title.text !== undefined ? rawSection.title.text : rawSection.title;
+                section.title = (
+                    <View>
+                        <Text style={CL_styles.CL_roundButtonText}>{title}</Text>
+                    </View>
+                );
+            }
 
-          // Placeholder if nothing valid was passed.
-          else {
-            section.title = (
-              <View>
-                <Text style={CL_styles.CL_roundButtonText}>Placeholder</Text>
-              </View>);
-          }
+            // Placeholder if nothing valid was passed.
+            else {
+                section.title = (
+                    <View>
+                        <Text style={CL_styles.CL_roundButtonText}>Placeholder</Text>
+                    </View>
+                );
+            }
 
-          // If an element was passed for the content of this list item, use
-          // that.
-          if (React.isValidElement(rawSection.content)) {
-            section.content = rawSection.content;
-          }
+            // If an element was passed for the content of this list item, use
+            // that.
+            if (React.isValidElement(rawSection.content)) {
+                section.content = rawSection.content;
+            }
 
-          // Otherwise, assume it is a list of items for InfoContent and create
-          // an element for it.
-          else if (Array.isArray(rawSection.content)) {
-            section.content = (<InfoContent contents={rawSection.content}/>)
-          }
+            // Otherwise, assume it is a list of items for InfoContent and create
+            // an element for it.
+            else if (Array.isArray(rawSection.content)) {
+                section.content = (<InfoContent contents={rawSection.content}/>)
+            }
 
-          // Othrerwise, if it is just text, create a text element.
-          else if (typeof rawSection.content === "string") {
-            section.content = (<View>
-              <Text>{rawSection.content}</Text>
-            </View>)
-          }
+            // Othrerwise, if it is just text, create a text element.
+            else if (typeof rawSection.content === "string") {
+                section.content = (
+                    <View>
+                        <Text>{rawSection.content}</Text>
+                    </View>
+                )
+            }
 
-          // Placeholder if nothing valid was passed.
-          else {
-            section.content = (<View>
-              <Text>Placeholder content</Text>
-            </View>)
-          }
+            // Placeholder if nothing valid was passed.
+            else {
+                section.content = (
+                    <View>
+                        <Text>Placeholder content</Text>
+                    </View>
+                )
+            }
 
-          content.push(section);
-      }
-      return content;
+            content.push(section);
+        }
+        return content;
     }
 
     // Render elements for the header.
@@ -572,16 +578,16 @@ class CollapsibleList extends Component {
             <View
             style={isActive ? CL_styles.CL_roundButtonSelected : CL_styles.CL_roundButton}
             >{section.title}{isActive ? (
-            <Image
-                  source={require('../assets/images/Icons/icon_dropup.png')}
-                  style={CL_styles.CL_imageIcon}
-              />
-              ) : (
-            <Image
+                <Image
+                    source={require('../assets/images/Icons/icon_dropup.png')}
+                    style={CL_styles.CL_imageIcon}
+                />
+                ) : (
+                <Image
                     source={require('../assets/images/Icons/icon_dropdown.png')}
                     style={CL_styles.CL_imageIcon}
-              />
-              )}</View>
+                />
+            )}</View>
         );
     };
 
@@ -626,13 +632,13 @@ export { CollapsibleList };
 // - source: The source of the image to display.
 // - style: Any styling to use for the image.
 export function WrappedAutoHeightImage( props ) {
-  const [wrapperWidth, setWrapperWidth] = useState(0)
-  return (
-    <View
-      style={props.style}
-      onLayout={event => setWrapperWidth(event.nativeEvent.layout.width)}
-    >
-      {Platform.OS === 'web' ? <img style={{ width: wrapperWidth, maxWidth: "512px", display: 'block', marginLeft: 'auto', marginRight: 'auto' }} src={props.source}/> : <AutoHeightImage width={wrapperWidth} source={props.source}/>}
-    </View>
-  )
+    const [wrapperWidth, setWrapperWidth] = useState(0)
+    return (
+        <View
+            style={props.style}
+            onLayout={event => setWrapperWidth(event.nativeEvent.layout.width)}
+        >
+            {Platform.OS === 'web' ? <img style={{ width: wrapperWidth, maxWidth: "512px", display: 'block', marginLeft: 'auto', marginRight: 'auto' }} src={props.source}/> : <AutoHeightImage width={wrapperWidth} source={props.source}/>}
+        </View>
+    )
 }

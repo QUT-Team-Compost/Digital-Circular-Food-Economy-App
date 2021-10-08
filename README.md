@@ -20,7 +20,7 @@ The initial screen of the app. It sets up the status bar and header of the app, 
 ### Components
 
 #### DataStore.js
-Contains the state storage that is shared across the mobile app. At present, this is used to keep track of the screen that the user is currently on, so that it can be shown by the menu. This makes use of the (Redux Toolkit)[https://redux-toolkit.js.org/].
+Contains the state storage that is shared across the mobile app. At present, this is used to keep track of the screen that the user is currently on, so that it can be shown by the menu. This makes use of the [Redux Toolkit](https://redux-toolkit.js.org/).
 
 #### RootNavigation.js
 Contains a reference to the React Navigation reference so that navigation information can be used throughout the app.
@@ -61,7 +61,7 @@ Contains the screen that shows the house scores in a VerticalBarChart component.
 Contains the screen that allows users to take a series of quiz questions. By default, this is five randomly selected from a list. Users will be invited to start the quiz, answer the questions and then be shown how many they got right, with a button to start again. Questions are multiple choice, can have multiple correct answers, and can include images.
 
 #### SensorScreen.js
-Contains the screen that shows information from sensors in the compost. Like with the house scores, this is intended to be downloaded from the mobile app's server, though the actual source is up to the developer. The data is originally from a sensor by (Substation33)[https://substation33.com.au/] in Queensland, Australia, the design of which will also be released at some point alongside this source code.
+Contains the screen that shows information from sensors in the compost. Like with the house scores, this is intended to be downloaded from the mobile app's server, though the actual source is up to the developer. The data is originally from a sensor by [Substation33](https://substation33.com.au/) in Queensland, Australia, the design of which will also be released at some point alongside this source code.
 
 
 ## Building
@@ -71,7 +71,7 @@ In order to build this app, the process is as follows:
     - For Mac or Linux, use the package manager included with your distribution.
     - For Windows, download and install from https://nodejs.org/en/download/.
 1. Install the Expo CLI globally using npm with the command `npm install -g expo-cli` at the command line.
-1. In the root directory where the code resides, execute the command `npm install` followed by `expo install` at the command line in order to install the packages required by the app.
+1. In the root directory where the code resides, execute the command `npm ci` (or `npm install` if package-lock.json is not present) followed by `expo install` at the command line in order to install the packages required by the app.
 1. Before building, an .env file should be created in the root directory. On Windows, a file with this name can be created through the Command Prompt through `echo. > .env` or by saving a file in a text editor with the name surrounded in double quotes.
     - This file can contain the following entries:
         - PASSCODE_HASH_ACTUAL - A hash for a passcode to enter the app, intended to prevent random users from using it (this passcode would be supplied at the school). If not supplied, the app skips the passcode step.
