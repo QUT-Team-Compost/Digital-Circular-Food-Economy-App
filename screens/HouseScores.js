@@ -179,7 +179,6 @@ export class HouseScoreGraph extends Component {
                             scores: null,
                             }
                         });
-                        return null;
                     } else {   
                         dprint("HouseScoreGraph: Successfully retrieved house scores");
                         this.setState(state => {
@@ -187,7 +186,6 @@ export class HouseScoreGraph extends Component {
                             scores: response.data.houses,
                             }
                         });
-                        return null;
                     }
                 })
                 .catch((error) => {
@@ -198,7 +196,6 @@ export class HouseScoreGraph extends Component {
                         scores: null,
                         }
                     });
-                    return null;
                 });
             }
     }
@@ -236,7 +233,6 @@ export class HouseScoreGraph extends Component {
                     scores: null,
                     }
                 })
-                return null;
             }
         }
 

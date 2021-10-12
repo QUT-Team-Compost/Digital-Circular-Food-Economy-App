@@ -187,7 +187,7 @@ class Quiz extends Component {
     render() {
 
         // If no random questions were selected, we cannot show a quiz.
-        if (this.state.userAnswers === undefined || this.state.userAnswers === []) {
+        if (this.state.userAnswers === undefined || this.state.userAnswers === [] || this.state.userAnswers.length === 0) {
             dprint("Quiz: No questions were chosen for the quiz.")
             return (<View style={sharedStyles.infoContainer}>
                 <View style={styles.startContainer}>
@@ -262,17 +262,20 @@ class Quiz extends Component {
             return (<View style={sharedStyles.infoContainer}>
             {/* The list of answers, whether the user got them correct or not,
             and the explanation for them. */}
-            <View style={styles.scoreContainer}>
+            <View style={styles.scoreHeaderContainer}>
                 <></>
                 <Text style={styles.scoreHeader}>You got {correctAnswers} {correctAnswers == 1 ? "question" : "questions"} correct!</Text>
             </View>
-            {explanations.map(explanation => (<View key={explanation.id} style={styles.explanationContainer}>
-                <Text style={styles.explanationHeader}>{explanation.title}</Text>
-                {explanation.wasCorrect ?
-                    <Text style={styles.explanationHeaderCorrect}>You got this question correct</Text> :
-                    <Text style={styles.explanationHeaderIncorrect}>You got this question incorrect</Text>}
+            {explanations.map((explanation, index) => (<View key={explanation.id} style={styles.explanationContainer}>
+                <View style={styles.explanationHeaderContainer}>
+                    <Text style={styles.explanationHeader}>Question {index+1}: {explanation.title}</Text>
+                    {explanation.wasCorrect ?
+                        <Text style={styles.explanationHeaderCorrect}>You got this question correct!</Text> :
+                        <Text style={styles.explanationHeaderIncorrect}>You got this question incorrect!</Text>}
+                </View>
                 <Text style={styles.explanationText}>Correct answer: {explanation.answer}</Text>
                 <Text style={styles.explanationText}>Your answer: {explanation.userAnswer}</Text>
+                <Text style={styles.explanationSubHeader}>Reason for correct answer:</Text>
                 <Text style={styles.explanationText}>{explanation.explanation}</Text>
             </View>))}
 
@@ -303,7 +306,7 @@ class Quiz extends Component {
                 {/* The question text and the image associated with it. */}
                 <View style={styles.questionContainer}>
                     <></>
-                    <Text style={styles.questionHeader}>{currentQuestion.title}</Text>
+                    <Text style={styles.questionHeader}>Question {this.state.currentQuestionIndex+1}: {currentQuestion.title}</Text>
                     {/* Only show an image if the question has one. */}
                     {currentQuestion.image &&
                     <WrappedAutoHeightImage
@@ -359,7 +362,7 @@ class Quiz extends Component {
         } else {
             return (<View style={sharedStyles.infoContainer}>
             <View style={styles.startContainer}>
-                <Text style={sharedStyles.bannerText}>If you want to test your knowledge about composting, you can take a go at this quiz! There will be {totalQuestions} questions selected at random.</Text>
+                <Text style={sharedStyles.bannerText}>If you want to test your knowledge about composting, you can take a go at this quiz! There will be {this.state.userAnswers.length} {this.state.userAnswers.length === 1 ? "question" : "questions"} selected at random.</Text>
             </View>
             {/* A button for proceeding to the rest of the quiz.*/}
             <TouchableHighlight
@@ -473,7 +476,7 @@ function generateQuizQuestions() {
 
     // Random questions can only be picked if questionList exists and has at
     // least one question.
-    if (questionList !== undefined && questionList.length > 0) {
+    if (questionList !== undefined && questionList.length > 0 && totalQuestions > 0) {
         // Get a list of random questions.
         var randomQuestions = getRandom(questionList, Math.min(totalQuestions, questionList.length));    
 
@@ -526,7 +529,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
 
-    scoreContainer: {
+    scoreHeaderContainer: {
       alignItems: "center",
     },
 
@@ -545,8 +548,24 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
     },
+
     explanationText: {
-      fontSize: 17,
-      marginBottom: 2,
+        fontSize: 17,
+        marginBottom: 2,
     },
+
+    explanationHeaderContainer: {
+      alignItems: "center",
+    },
+    
+    explanationContainer: {
+        marginTop: 15,
+        marginBottom: 15,
+    },
+
+    explanationSubHeader: {
+        fontSize: 17,
+        fontWeight: "bold",
+        marginBottom: 2,
+    }
 });

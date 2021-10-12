@@ -184,6 +184,9 @@ function parseISOString(s) {
 
 // The main component. It shows the latest sensor data from the cloud server,
 // if it is available.
+// It first returns a list of the available sensors, and then gets the data
+// for the first sensor on that list. Later on, this screen will be modified
+// to allow selecting a sensor to show its data.
 // The retrieved data should be a JSON array of objects with the following
 // properties. This is based on the data that the Substation33 compost sensor
 // sends to Thingsboard, which the mobile app's server gets the data from and
@@ -199,52 +202,101 @@ function parseISOString(s) {
 // timestamp: The date and time this data was sent to the server.
 export default function SensorScreen( {navigation, route} ) {
 
-    // Store the sensor data, and if any data was actually loaded.
-    const [sensorData, setSensorData] = useState(-1);
-    const [dataLoaded, setDataLoaded] = useState(-1);
+    // Stores the list of sensors, as well as whether the list was actually
+    // loaded.
+    const [sensorList, setSensorList] = useState(-1);
+    const [sensorListLoaded, setSensorListLoaded] = useState(-1);
 
-    const loadData = () => {
-        dprint("SensorScreen: running loadData()");
+    // Stores the data for the current sensor, as well as whether any data was
+    // actually loaded.
+    const [sensorData, setSensorData] = useState(-1);
+    const [sensorDataLoaded, setSensorDataLoaded] = useState(-1);
+
+    // Function for using Axios to load a sensor's data, based on the ID.
+    const loadData = (sensorId) => {
+        dprint("SensorScreen: running loadData() for sensor with ID " + sensorId);
         dprint("SensorScreen: Server URL is " + SERVER_BASE_URL);
-        axios.post(SERVER_BASE_URL + "/getSensorData", {'sensor_id': "d444f210-9025-11eb-b5ca-d76ebde59f16"}, {
+        axios.post(SERVER_BASE_URL + "/getSensorData", {'sensor_id': sensorId}, {
             headers: {
                 'Content-Type': 'application/json', 'Accept': 'application/json'
             }
         }).then(function(response) {
             setSensorData(response.data.sensor_data);
-            setDataLoaded(true);
-            return null;
+            setSensorDataLoaded(true);
         }).catch(function(error) {
             dprint('Error on getting sensor data: ' + error);
-            setDataLoaded(false);
-            return null;
+            setSensorDataLoaded(false);
         });
     }
 
-    // Attempt to load the data from the cloud server. If no data can be
-    // loaded, the status of data loading is set to false.
+    // Function for using Axios to load the list of sensors.
+    // Parameter indicates whether to automatically load the data for the
+    // first sensor in the list.
+    const loadList = (load) => {
+        dprint("SensorScreen: running loadList()");
+        dprint("SensorScreen: Server URL is " + SERVER_BASE_URL);
+        axios.get(SERVER_BASE_URL + "/getSensorList", {
+            headers: {
+                'Content-Type': 'application/json', 'Accept': 'application/json'
+            }
+        }).then(function(response) {
+            setSensorList(response.data.sensors);
+            setSensorListLoaded(true);
+            if (sensorDataLoaded === -1 && load === true) {
+                if (response.data.sensors !== undefined && response.data.sensors.length > 0) {
+                    dprint("SensorScreen: loadList - calling loadData()");
+                    loadData(response.data.sensors[0].id);
+                } else {
+                    dprint("SensorScreen: loadList - setting sensorDataLoaded to false");
+                    setSensorDataLoaded(false);
+                }
+            }
+        }).catch(function(error) {
+            dprint('Error on getting sensor list: ' + error);
+            setSensorListLoaded(false);
+        });
+    }
+
+    // When the screen is loaded, first attempt to retrieve a list of sensors,
+    // and then get the data of the first sensor on the list.
     useEffect(() => {
-        if (dataLoaded === -1) {
-            loadData();
+        if (sensorListLoaded === -1) {
+            loadList(true);
         }
       
         // Reload data when the user focuses on the screen again.
         const willFocusSubscription = navigation.addListener("focus", () => {
-            loadData();
+            if (sensorListLoaded === -1) {
+                loadList(true);
+            }
         })
         return willFocusSubscription;
     }, []);
 
-    // Before any attempts to load data, show that the app is loading data.
-    if (dataLoaded === -1) {
+    // Show that the app is loading the sensor list if it is not yet loaded.
+    if (sensorListLoaded === -1) {
         return (<View style={sharedStyles.standardContainer}>
-            <Text style={sharedStyles.bannerText}>Now loading sensor data...</Text>
+            <Text style={sharedStyles.bannerText}>Now checking what sensors are available...</Text>
         </View>);
 
-    // If data failed to load, show a message saying so.
-    } else if (dataLoaded === false || sensorData === -1) {
+    // If the list of sensors failed to be retrieved from the database, show
+    // a message saying so.
+    } else if (sensorListLoaded === false || sensorList === -1) {
         return (<View style={sharedStyles.standardContainer}>
-            <Text style={sharedStyles.bannerText}>We couldn't load sensor data right now. Please try again later!</Text>
+            <Text style={sharedStyles.bannerText}>We couldn't check what sensors are available right now. Please try again later!</Text>
+        </View>);
+
+    // Show that the app is loading the sensor data if it is not yet loaded.
+    } else if (sensorDataLoaded === -1) {
+        return (<View style={sharedStyles.standardContainer}>
+            <Text style={sharedStyles.bannerText}>Now loading data for a sensor...</Text>
+        </View>);
+
+    // If the data of a sensor failed to be retrieved from the database, show
+    // a message saying so.
+    } else if (sensorDataLoaded === false || sensorData === -1) {
+        return (<View style={sharedStyles.standardContainer}>
+            <Text style={sharedStyles.bannerText}>We couldn't load data for a sensor right now. Please try again later!</Text>
         </View>);
 
     // Otherwise, parse the donwloaded data for showing in gauges.
@@ -264,8 +316,7 @@ export default function SensorScreen( {navigation, route} ) {
         {
             // Force a reload of the screen by setting dataLoaded to false.
             dprint("SensorScreen: Did not receive correct sensor data from the database.") 
-            setDataLoaded(false);
-            return null;
+            setSensorDataLoaded(false);
         }
         var mv = Number.parseFloat(firstRow.mv);
         var h = Number.parseFloat(firstRow.h);
