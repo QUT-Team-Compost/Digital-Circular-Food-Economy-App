@@ -33,6 +33,8 @@ Contains several different components, functions and variables that are used acr
     - Bulletpointed text for lists;
     - Two types of images, one of which automatically adjusts its height based on its width; and
     - Videoes that will automatically play when the screen is navigated to, and stop when navigating away.
+        - If multiple videos are put in an InfoScreen, only the last one will exhibit the automated stop and start behaviour.
+        - Currently, this video cannot be set to loop (without modifying SharedComponents.js).
     - Other elements may also be included as well by passing JSX.
 - A VerticalBarChart component which displays a vertical bar chart, used for house scores but can be reused for other purposes. This makes use of the the react-native-svg-charts package.
 - A CollapsableList component which allows content to be hidden under a header and then revealed (and rehidden) by tapping on that header. This works similarly as InfoScreen as an object containing the content only can be passed, rather than using JSX. An array configured in the same way as using InfoScreen can also be passed as content.
@@ -44,7 +46,7 @@ Contains several different components, functions and variables that are used acr
 Contains the information for the different screens that can be navigated to using React Navigation, referenced by App.js. The array used to create the routes also populates the menu bar at the top of the app. The intention is to keep the routes logic outside of the actual components and thus make it easier to modify. While it is also intended that most screens in the app make use of the InfoScreen component, any component that is valid as a screen can be used.
 
 #### ExampleRoute.js
-Contains two examples of content to populate screens on routes, to show how to define them. The first example shows all of the different possible content types, and the second shows how to use the CollapsableList component.
+Contains two examples of content to populate screens on routes, to show how to define them. The first example shows all of the different possible content types, and the second shows how to use the CollapsableList component. This example uses two arrays in the same script file, though they can be combined and separated however the developer wishes to organise them.
 
 #### AboutApp.js
 Contains the content for the app's about screen. Similar in construction to the above.

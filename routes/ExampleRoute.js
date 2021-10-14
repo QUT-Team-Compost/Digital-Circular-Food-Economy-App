@@ -44,7 +44,7 @@ export const ExampleRoute = [
     {
         id: 0,
         type: CONTENT_TYPES.TEXT,
-        contents: "This is an example route.",
+        contents: "This is an example route using the InfoScreen component.",
         style: sharedStyles.infoMainPointText,
     },
     // Text content with a bullet point.
@@ -91,7 +91,7 @@ export const ExampleRoute = [
     {
         id: 6,
         type: CONTENT_TYPES.TEXT,
-        contents: "A video that will automatically play when navigating to the screen and automatically stop when navigating away.",
+        contents: "A video that will automatically play when navigating to the screen and automatically stop when navigating away. (Note that if multiple videos are included in one set of content, only the last will act like this. It is best to only include one.)",
         style: sharedStyles.imageCaption,
     },
     // Image content which will have its height automatically adjusted.
@@ -109,6 +109,10 @@ export const ExampleRoute = [
         style: sharedStyles.imageCaption,
     }
 ]
+
+// A route script can have multiple arrays of content that are exported and
+// used in the main routes component. This is optional, and the content can be
+// combined or separated in a way that suits the developer.
 
 // This is an example of content that includes the CollapsableList component.
 // That component is also designed to accept an array of objects to avoid

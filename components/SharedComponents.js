@@ -179,7 +179,8 @@ export const CONTENT_TYPES = {
 // - If type is "text", creates a Text component.
 // - If type is "video", creates an expo-av Video component. This will be set
 //   to pause when the user navigates away from the screen and restart when
-//   they return.
+//   they return. At present, only the last video in an InfoContent will
+//   exhibit that automatic behaviour due to how this is coded.
 // - If type is "autoImage", creates a wrapped AutoHeightImage component that
 //   will be the width specified in the supplied style and centred using a View
 //   component.
