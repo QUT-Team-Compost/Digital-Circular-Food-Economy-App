@@ -9,7 +9,8 @@ import { InfoScreen } from '../components/SharedComponents.js';
 // Example route screen.
 import {
     ExampleRoute,
-    ExampleRouteCL
+    ExampleRouteCL,
+    ExampleRouteMultiVideo
 } from './ExampleRoute.js';
 
 // Screens for about the app.
@@ -37,9 +38,10 @@ import SensorScreen from '../screens/SensorScreen.js'
 export const routeIdList = [
       { id: 0,  routeName: 'Home',              routeComponent: HomeScreen,     routeInitialParams: { key: 0, },                            name: 'Home', },
       { id: 1,  routeName: 'ExampleRoute',      routeComponent: InfoScreen,     routeInitialParams: { key: 1, contents: ExampleRoute, },    name: 'Example route', },
-      { id: 2,  routeName: 'ExampleRouteCL',    routeComponent: InfoScreen,     routeInitialParams: { key: 1, contents: ExampleRouteCL, },  name: 'Example route with list', },
-      { id: 3,  routeName: 'HouseScores',       routeComponent: HouseScores,    routeInitialParams: { key: 2, },                            name: 'House scores', },
-      { id: 4,  routeName: 'Sensors',           routeComponent: SensorScreen,   routeInitialParams: { key: 3 },                             name: 'Compost sensors', },
-      { id: 5,  routeName: 'Quiz',              routeComponent: QuizScreen,     routeInitialParams: { key: 4, },                            name: 'Quiz', },
-      { id: 6,  routeName: 'AboutApp',          routeComponent: InfoScreen,     routeInitialParams: { key: 5, contents: AboutApp, },        name: 'About the app', },
+      { id: 2,  routeName: 'ExampleRouteCL',    routeComponent: InfoScreen,     routeInitialParams: { key: 2, contents: ExampleRouteCL, },  name: 'Example route with list', },
+      { id: 7,  routeName: 'ExampleRouteMultiVideo',    routeComponent: InfoScreen,     routeInitialParams: { key: 7, contents: ExampleRouteMultiVideo, },  name: 'Multi video example', },
+      { id: 3,  routeName: 'HouseScores',       routeComponent: HouseScores,    routeInitialParams: { key: 3, },                            name: 'House scores', },
+      { id: 4,  routeName: 'Sensors',           routeComponent: SensorScreen,   routeInitialParams: { key: 4 },                             name: 'Compost sensors', },
+      { id: 5,  routeName: 'Quiz',              routeComponent: QuizScreen,     routeInitialParams: { key: 5, },                            name: 'Quiz', },
+      { id: 6,  routeName: 'AboutApp',          routeComponent: InfoScreen,     routeInitialParams: { key: 6, contents: AboutApp, },        name: 'About the app', },
 ]

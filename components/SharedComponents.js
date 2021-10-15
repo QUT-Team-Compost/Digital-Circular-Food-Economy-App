@@ -179,8 +179,8 @@ export const CONTENT_TYPES = {
 // - If type is "text", creates a Text component.
 // - If type is "video", creates an expo-av Video component. This will be set
 //   to pause when the user navigates away from the screen and restart when
-//   they return. At present, only the last video in an InfoContent will
-//   exhibit that automatic behaviour due to how this is coded.
+//   they return. Including a loop property for the video entry in the content
+//   that is true will let the video loop.
 // - If type is "autoImage", creates a wrapped AutoHeightImage component that
 //   will be the width specified in the supplied style and centred using a View
 //   component.
@@ -189,9 +189,9 @@ export function InfoContent (props) {
     
     // Get the contents of this screen, as well as setting up video handling.
     const contents = props.contents;
-    const video = useRef(undefined)
+    const videos = useRef([]);
     const _handleVideoRef = component => {
-        video.current = component;
+        videos.current[videos.current.length] = component;
     }
 
   // If there is valid navigation, and there's a video on this screen, ensure
@@ -199,14 +199,18 @@ export function InfoContent (props) {
   useEffect(() => {
         if (props.navigation) {
             const stopVideo = props.navigation.addListener("blur", () => {
-                if (video.current) {
-                    video.current.stopAsync();
+                if (videos.current.length > 0) {
+                    for (var video of videos.current) {
+                        video.stopAsync();
+                    }
                 }
             });
 
             const startVideo = props.navigation.addListener("focus", () => {
-                if (video.current) {
-                    video.current.playAsync();
+                if (videos.current.length > 0) {
+                    for (var video of videos.current) {
+                        video.playAsync();
+                    }
                 }
             });
         }
@@ -244,7 +248,7 @@ export function InfoContent (props) {
                             isMuted={false}
                             resizeMode="cover"
                             shouldPlay
-                            isLooping={false}
+                            isLooping={item.loop === true ? true : false}
                             style={Platform.OS === 'web' ? [item.style, {maxWidth: '512px', maxHeight: '288px'}] : item.style}
                             useNativeControls={true}
                             ref={_handleVideoRef}
@@ -285,6 +289,8 @@ export function InfoContent (props) {
 //             for CONTENT_TYPES.IMAGE, and a video supplied with require for
 //             CONTENT_TYPES.VIDEO, otherwise expects a string.
 // - style: a style to apply to the component.
+// - loop: if the content is a video and this is the boolean value true, the
+//         video will be set to loop.
 // initialParams can also contain an extra_components: an array of components
 // that should be included on the screen as well. These will be added under the
 // InfoContent component.

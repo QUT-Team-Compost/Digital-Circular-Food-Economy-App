@@ -91,7 +91,7 @@ export const ExampleRoute = [
     {
         id: 6,
         type: CONTENT_TYPES.TEXT,
-        contents: "A video that will automatically play when navigating to the screen and automatically stop when navigating away. (Note that if multiple videos are included in one set of content, only the last will act like this. It is best to only include one.)",
+        contents: "A video that will automatically play when navigating to the screen and automatically stop when navigating away.",
         style: sharedStyles.imageCaption,
     },
     // Image content which will have its height automatically adjusted.
@@ -187,5 +187,59 @@ export const ExampleRouteCL = [
                 }
             ]
         }/>)
+    }
+]
+
+// This route demonstrates multiple videos on one screen. It also demonstrates
+// how to set videos to loop.
+export const ExampleRouteMultiVideo = [    
+    // Regular text content.
+    {
+        id: 0,
+        type: CONTENT_TYPES.TEXT,
+        contents: "This demonstrates multiple videos on one screen, that will automatically stop and start depending on user navigation. These three videos are also set to loop.",
+        style: sharedStyles.infoMainPointText,
+    },
+    // Video content that will automatically play when the user navigates to the screen, and stop when they navigate away.
+    {
+        id: 1,
+        type: CONTENT_TYPES.VIDEO,
+        contents: require("../assets/videos/exampleVideo.mp4"),
+        style: {
+                  width: "50%",
+                  marginTop: 10,
+                  height: ((Dimensions.get('window').width * 0.5) / (16 / 9)), // This is intended to make the height correct to the given width for a 16:9 ratio video.
+                  marginTop: 5,
+                  backgroundColor: "black",
+                },
+        loop: true
+    },
+    // Video content that will automatically play when the user navigates to the screen, and stop when they navigate away.
+    {
+        id: 2,
+        type: CONTENT_TYPES.VIDEO,
+        contents: require("../assets/videos/exampleVideo.mp4"),
+        style: {
+                  width: "50%",
+                  marginTop: 10,
+                  height: ((Dimensions.get('window').width * 0.5) / (16 / 9)), // This is intended to make the height correct to the given width for a 16:9 ratio video.
+                  marginTop: 5,
+                  backgroundColor: "black",
+                },
+        loop: true
+    },
+    // Video content that will automatically play when the user navigates to the screen, and stop when they navigate away.
+    {
+        id: 3,
+        type: CONTENT_TYPES.VIDEO,
+        contents: require("../assets/videos/exampleVideo.mp4"),
+        style: {
+                  width: "50%",
+                  marginTop: 10,
+                  height: ((Dimensions.get('window').width * 0.5) / (16 / 9)), // This is intended to make the height correct to the given width for a 16:9 ratio video.
+                  marginTop: 5,
+                  backgroundColor: "black",
+                },
+        loop: true
     }
 ]

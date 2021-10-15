@@ -32,9 +32,7 @@ Contains several different components, functions and variables that are used acr
     - Regular text;
     - Bulletpointed text for lists;
     - Two types of images, one of which automatically adjusts its height based on its width; and
-    - Videoes that will automatically play when the screen is navigated to, and stop when navigating away.
-        - If multiple videos are put in an InfoScreen, only the last one will exhibit the automated stop and start behaviour.
-        - Currently, this video cannot be set to loop (without modifying SharedComponents.js).
+    - Videoes that will automatically play when the screen is navigated to, and stop when navigating away. They can also be optionally set to loop.
     - Other elements may also be included as well by passing JSX.
 - A VerticalBarChart component which displays a vertical bar chart, used for house scores but can be reused for other purposes. This makes use of the the react-native-svg-charts package.
 - A CollapsableList component which allows content to be hidden under a header and then revealed (and rehidden) by tapping on that header. This works similarly as InfoScreen as an object containing the content only can be passed, rather than using JSX. An array configured in the same way as using InfoScreen can also be passed as content.
