@@ -3,7 +3,7 @@
 
 // ------------ Imports ------------
 import * as React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { sharedStyles, dprint } from '../components/SharedComponents.js';
 import { useState, useEffect } from 'react';
@@ -212,6 +212,9 @@ export default function SensorScreen( {navigation, route} ) {
     const [sensorData, setSensorData] = useState(-1);
     const [sensorDataLoaded, setSensorDataLoaded] = useState(-1);
 
+    // Stores the ID for the currently selected sensor.
+    const [selectedSensor, setSelectedSensor] = useState(-1);
+
     // Function for using Axios to load a sensor's data, based on the ID.
     const loadData = (sensorId) => {
         dprint("SensorScreen: running loadData() for sensor with ID " + sensorId);
@@ -245,6 +248,7 @@ export default function SensorScreen( {navigation, route} ) {
             if (sensorDataLoaded === -1 && load === true) {
                 if (response.data.sensors !== undefined && response.data.sensors.length > 0) {
                     dprint("SensorScreen: loadList - calling loadData()");
+                    setSelectedSensor(response.data.sensors[0].id);
                     loadData(response.data.sensors[0].id);
                 } else {
                     dprint("SensorScreen: loadList - setting sensorDataLoaded to false");
@@ -273,6 +277,42 @@ export default function SensorScreen( {navigation, route} ) {
         return willFocusSubscription;
     }, []);
 
+    // When the selected menu item changes, change to the corresponding sensor.
+    const onSelectedItemsChange = (selectedId) => {
+
+        // Only change if the selected item changed.
+        if (selectedId !== selectedSensor) {
+            dprint("SensorScreen: onSelectedItemsChange - calling loadData()");
+            setSensorDataLoaded(-1);
+            setSelectedSensor(selectedId);
+            loadData(selectedId);
+        }
+    };
+  
+    // Generates elements for a menu item.
+    const ItemToRender = (item) => {
+
+        // Detemrine whether the screen this button is associated with is the
+        // current screen.
+        const selected = item.id === selectedSensor;
+
+        // Create a button-like element using TouchableOpacity. If the menu item is
+        // selected, the outline will be darker than usual to act as a visual
+        // indicator.
+        return (
+            <TouchableOpacity
+                style={[styles.OptionWrapper, { borderColor: selected ? '#8888FF' : '#DDDDFF', width: 'auto'}]}
+                onPress={() => onSelectedItemsChange(item.id)}
+                key={item.id + "_button"}
+            >
+                <Text style={sharedStyles.infoMainPointText}
+                    key={item.id + "_text"}>
+                    {item.name}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
     // Show that the app is loading the sensor list if it is not yet loaded.
     if (sensorListLoaded === -1) {
         return (<View style={sharedStyles.standardContainer}>
@@ -288,15 +328,39 @@ export default function SensorScreen( {navigation, route} ) {
 
     // Show that the app is loading the sensor data if it is not yet loaded.
     } else if (sensorDataLoaded === -1) {
+        var currentSensor = sensorList[0];
+        if (selectedSensor !== -1) {
+            currentSensor = sensorList.find(data => data.id === selectedSensor);
+        }
         return (<View style={sharedStyles.standardContainer}>
-            <Text style={sharedStyles.bannerText}>Now loading data for a sensor...</Text>
+            {/* Create a horizontal scroll view for the menu and generate
+            menu items from the sensor list, if there is more than one
+            sensor available. */}
+            {sensorList.length > 1 && <View><ScrollView horizontal={true} style={{paddingLeft: 10, paddingRight: 10}}>
+                {sensorList.map((item) => {
+                    return ItemToRender(item);
+                })}
+            </ScrollView></View>}
+            <Text style={sharedStyles.bannerText}>Now loading data for sensor {currentSensor.name}...</Text>
         </View>);
 
     // If the data of a sensor failed to be retrieved from the database, show
     // a message saying so.
     } else if (sensorDataLoaded === false || sensorData === -1) {
+        var currentSensor = sensorList[0];
+        if (selectedSensor !== -1) {
+            currentSensor = sensorList.find(data => data.id === selectedSensor);
+        }
         return (<View style={sharedStyles.standardContainer}>
-            <Text style={sharedStyles.bannerText}>We couldn't load data for a sensor right now. Please try again later!</Text>
+            {/* Create a horizontal scroll view for the menu and generate
+            menu items from the sensor list, if there is more than one
+            sensor available. */}
+            {sensorList.length > 1 && <View><ScrollView horizontal={true} style={{paddingLeft: 10, paddingRight: 10}}>
+                {sensorList.map((item) => {
+                    return ItemToRender(item);
+                })}
+            </ScrollView></View>}
+            <Text style={sharedStyles.bannerText}>We couldn't load data for sensor {currentSensor.name} right now. {sensorList.length > 1 ? "Please select another sensor, or" : "Please"} try again later!</Text>
         </View>);
 
     // Otherwise, parse the donwloaded data for showing in gauges.
@@ -332,6 +396,14 @@ export default function SensorScreen( {navigation, route} ) {
         var methanePPMMax = Math.round(mvmax >= 2 ? ((mvmax - 2) / 5) * 10000 : 0);
         return (
             <View style={sharedStyles.standardContainer}>
+                {/* Create a horizontal scroll view for the menu and generate
+                menu items from the sensor list, if there is more than one
+                sensor available. */}
+                {sensorList.length > 1 && <View><ScrollView horizontal={true} style={{paddingLeft: 10, paddingRight: 10}}>
+                    {sensorList.map((item) => {
+                        return ItemToRender(item);
+                    })}
+                </ScrollView></View>}
                 <ScrollView style={sharedStyles.standardContainer} contentContainerStyle={sharedStyles.contentContainer}>
                     <Text style={styles.TitleText}>Sensor data as of {timestamp}:</Text>
                     <SensorGauge header={"Methane level"} value={methanePPM} minValue={0} maxValue={10000} valueUnit={" ppm"} colourScheme={MethaneColours}/>
@@ -417,5 +489,18 @@ const styles = StyleSheet.create({
         alignContent: "space-between",
         justifyContent: "space-between",
         width: 200
-    }
+    },
+    OptionWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 10,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 30,
+        paddingRight: 30,
+        height: 50,
+        borderWidth: 3,
+        borderRadius: 10,
+    },
 });
