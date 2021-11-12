@@ -12,7 +12,7 @@ As a React Native app, this is compatiable with both Android and iOS phone opera
 
 ## Included source code
 
-There are extensive comments included to allow you to get a further idea of how the code functions.
+All source code files include extensive comments to allow you to get a further idea of how the code functions.
 
 #### App.js
 The initial screen of the app. It sets up the status bar and header of the app, as well as the navigation settings and the menu to navigate between screens. It also initially shows a screen to enter a passcode (if one is defined in the environment variables) to prevent people outside the school from using the app.
@@ -61,8 +61,7 @@ Contains the screen that shows the house scores in a VerticalBarChart component.
 Contains the screen that allows users to take a series of quiz questions. By default, this is five randomly selected from a list. Users will be invited to start the quiz, answer the questions and then be shown how many they got right, with a button to start again. Questions are multiple choice, can have multiple correct answers, and can include images.
 
 #### SensorScreen.js
-Contains the screen that shows information from sensors in the compost. Like with the house scores, this is intended to be downloaded from the mobile app's server, though the actual source is up to the developer. The data is originally from a sensor by [Substation33](https://substation33.com.au/) in Queensland, Australia, the design of which will also be released at some point alongside this source code.
-
+Contains the screen that shows information from sensors in the compost. Like with the house scores, this is intended to be downloaded from the mobile app's server, though the actual source is up to the developer. The data is originally from a sensor by [Substation33](https://substation33.com.au/) in Queensland, Australia, the design of which will also be released at some point alongside this source code. There are three types of display used: a semi-circular display for methane levels and humidity, a thermometer-like display for sensor and external temperature, and a line graph for showing the methane levels in the last day.
 
 ## Building
 

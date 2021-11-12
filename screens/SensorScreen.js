@@ -13,7 +13,10 @@ import Svg, {
     Line
 } from 'react-native-svg';
 import axios from 'axios';
-import dateFormat from "dateformat";
+import { XAxis, YAxis, Grid, LineChart } from 'react-native-svg-charts'
+import * as scale from 'd3-scale'
+import * as shape from 'd3-shape'
+import {format, differenceInDays, parseISO} from 'date-fns'
 
 // Environment variables used here.
 import {SERVER_BASE_URL} from "@env"
@@ -175,11 +178,110 @@ function SensorTemp (props) {
     )
 }
 
-// https://stackoverflow.com/a/27013409
-// Parses an ISOString to get the correct date and time.
-function parseISOString(s) {
-    var b = s.split(/\D+/);
-    return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+// Component that shows a series of methane levels as a line graph.
+// Expects the following props: 
+// - header: The title of the gauge.
+// - data: An array of data objects. Each object should have the form:
+//    - value: The methane level after correct conversion to PPM.
+//    - date: The date that corresponds to the methane level. Should be a valid
+//            date object.
+// - dateFormat: A string to format the date. If not given, defaults to "MMM d"
+function MethaneGraph (props) {
+    const header = props.header;
+    const data = props.data;
+    const dateFormat = props.dateFormat ? props.dateFormat : "MMM d";
+
+    return (
+        <View style={styles.outsideContainer}>
+            <Text style={styles.SensorHeaderText}>{header}</Text>
+
+            {/* Main container for the graph components. */}
+            <View style={styles.MethaneGraphContainer}>
+
+                {/* Label for Y axis. */}
+                <View style={styles.MethaneGraphYAxisLabelContainer}>
+                    <Text style={styles.MethaneGraphYAxisLabel}>Methane</Text>
+                </View>
+
+                {/* Y axis value lables and ticks. */}
+                <YAxis
+                    data={data}
+                    style={styles.MethaneGraphYAxis}
+                    contentInset={{
+                        top: 10,
+                        bottom: 10
+                    }}
+                    svg={{
+                        fontSize: 10,
+                        fill: 'grey'
+                    }}
+                    yAccessor={ ({ item }) => item.value }
+                    formatLabel={ (value) => `${value} ppm`}
+                    numberOfTicks={ 6 }
+                />
+
+                {/* Container for line graph and X axis. */}
+                <View style={styles.MethaneGraphContainerInside}>
+
+                    {/* Line graph. */}
+                    <LineChart
+                        style={{ flex: 1 }}
+                        data={data}
+                        contentInset={{ top: 10, bottom: 10 }}
+                        svg={{
+                            stroke: 'rgb(134, 65, 244)',
+                            strokeWidth: 3
+                        }}
+                        yAccessor={ ({ item }) => item.value }
+                        xAccessor={ ({ item }) => item.date }
+                        xScale={ scale.scaleTime }
+                        curve={ shape.curveLinear }
+                    >
+                        <Grid/>
+                    </LineChart>
+
+                    {/* X axis value lables and ticks. */}
+                    <XAxis
+                        style={styles.MethaneGraphXAxis}
+                        data={data}
+                        formatLabel={(value, index) => index}
+                        contentInset={{
+                            left: 10,
+                            right: 10
+                        }}
+                        svg={{
+                            fontSize: 10,
+                            fill: 'grey'
+                        }}
+                        xAccessor={ ({ item }) => item.date }
+                        scale={ scale.scaleTime }
+                        formatLabel={ (value) => format(value, dateFormat) }
+                        numberOfTicks={ 6 }
+                    />
+
+                    {/* Label for X axis. */}
+                    <Text style={styles.MethaneGraphXAxisLabel}>Time</Text>
+                </View>
+            </View>
+        </View>
+    );
+}
+
+// Checks a row of the sensor data to ensure it is valid.
+function checkSensorDataRow(row) {
+
+    // Check that all rows are present and the right format.
+    if (row.mv === undefined || isNaN(parseFloat(row.mv)) ||
+        row.h === undefined || isNaN(parseFloat(row.h)) ||
+        row.st === undefined || isNaN(parseFloat(row.st)) ||
+        row.et === undefined || isNaN(parseFloat(row.et)) ||
+        row.mvmin === undefined || isNaN(parseFloat(row.mvmin)) ||
+        row.mvmax === undefined || isNaN(parseFloat(row.mvmax)) ||
+        row.timestamp === undefined || isNaN(parseISO(row.timestamp))) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 // The main component. It shows the latest sensor data from the cloud server,
@@ -215,6 +317,9 @@ export default function SensorScreen( {navigation, route} ) {
     // Stores the ID for the currently selected sensor.
     const [selectedSensor, setSelectedSensor] = useState(-1);
 
+    // Stores the currently selected sensor data row.
+    const [selectedRow, setSelectedRow] = useState(0);
+
     // Function for using Axios to load a sensor's data, based on the ID.
     const loadData = (sensorId) => {
         dprint("SensorScreen: running loadData() for sensor with ID " + sensorId);
@@ -224,6 +329,18 @@ export default function SensorScreen( {navigation, route} ) {
                 'Content-Type': 'application/json', 'Accept': 'application/json'
             }
         }).then(function(response) {
+            var data = response.data.sensor_data;
+
+            // Check to see if all rows in the data are valid. If there are
+            // invalid ones, remove them.
+            dprint(`SensorScreen: Checking retrieved data for sensor with ID ${sensorId}.`);
+            for (var i = data.length -1; i >= 0; i--) {
+                if (checkSensorDataRow(data[i]) === false) {
+                    dprint(`SensorScreen: Row ${i} in sensor data is not valid, removing it.`);
+                    data.splice(i, 1);
+                }
+            }
+            setSensorData(data);
             setSensorData(response.data.sensor_data);
             setSensorDataLoaded(true);
         }).catch(function(error) {
@@ -321,7 +438,7 @@ export default function SensorScreen( {navigation, route} ) {
 
     // If the list of sensors failed to be retrieved from the database, show
     // a message saying so.
-    } else if (sensorListLoaded === false || sensorList === -1) {
+    } else if (sensorListLoaded === false || sensorList === -1 || sensorList.length < 1) {
         return (<View style={sharedStyles.standardContainer}>
             <Text style={sharedStyles.bannerText}>We couldn't check what sensors are available right now. Please try again later!</Text>
         </View>);
@@ -346,7 +463,9 @@ export default function SensorScreen( {navigation, route} ) {
 
     // If the data of a sensor failed to be retrieved from the database, show
     // a message saying so.
-    } else if (sensorDataLoaded === false || sensorData === -1) {
+    } else if (sensorDataLoaded === false || sensorData === -1 || sensorData.length < 1) {
+
+        // Get the currently selected sensor.
         var currentSensor = sensorList[0];
         if (selectedSensor !== -1) {
             currentSensor = sensorList.find(data => data.id === selectedSensor);
@@ -365,35 +484,59 @@ export default function SensorScreen( {navigation, route} ) {
 
     // Otherwise, parse the donwloaded data for showing in gauges.
     } else {
-        var firstRow = sensorData[0];
+
+        // Get the data for the selected row. (At the moment this is always the
+        // first row of retrieved data for the sensor.)
+        var currentRow = sensorData[selectedRow];
+
         // Check if the retrived data is correct, with at least one row of data
         // which has the correct properties. If not, show the error message
         // above.
-        if (firstRow === undefined ||
-            firstRow.mv === undefined ||
-            firstRow.h === undefined ||
-            firstRow.st === undefined ||
-            firstRow.et === undefined ||
-            firstRow.mvmin === undefined ||
-            firstRow.mvmax === undefined ||
-            firstRow.timestamp === undefined)
+        if (currentRow === undefined ||
+            checkSensorDataRow(currentRow) === false)
         {
             // Force a reload of the screen by setting dataLoaded to false.
             dprint("SensorScreen: Did not receive correct sensor data from the database.") 
             setSensorDataLoaded(false);
+            return(<></>);
         }
-        var mv = Number.parseFloat(firstRow.mv);
-        var h = Number.parseFloat(firstRow.h);
-        var st = Number.parseFloat(firstRow.st);
-        var et = Number.parseFloat(firstRow.et);
-        var mvmin = Number.parseFloat(firstRow.mvmin);
-        var mvmax = Number.parseFloat(firstRow.mvmax);
-        var timestamp = dateFormat(
-            parseISOString(firstRow.timestamp)
-            , "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
+        // Parse all the values of the current row.
+        var mv = Number.parseFloat(currentRow.mv);
+        var h = Number.parseFloat(currentRow.h);
+        var st = Number.parseFloat(currentRow.st);
+        var et = Number.parseFloat(currentRow.et);
+        var mvmin = Number.parseFloat(currentRow.mvmin);
+        var mvmax = Number.parseFloat(currentRow.mvmax);
+        var timestamp = parseISO(currentRow.timestamp);
         var methanePPM = Math.round(mv >= 2 ? ((mv - 2) / 5) * 10000 : 0);
         var methanePPMMin = Math.round(mvmin >= 2 ? ((mvmin - 2) / 5) * 10000 : 0);
         var methanePPMMax = Math.round(mvmax >= 2 ? ((mvmax - 2) / 5) * 10000 : 0);
+
+        // Get the currently selected sensor.
+        var currentSensor = sensorList[0];
+        if (selectedSensor !== -1) {
+            currentSensor = sensorList.find(data => data.id === selectedSensor);
+        }
+
+        // Set up an array for the last day's methane readings.
+        var data = [{
+            value: methanePPM,
+            date: timestamp
+       }]
+
+       // Go through all the sensor data for rows that occured within the last
+       // day. If there are any, add them to the above array.
+       for (var i = 1; i < sensorData.length; i++) {
+            var currentTimestamp = parseISO(sensorData[i].timestamp);
+
+            // Compare the two dates to see if the current date is within the
+            // last day.
+            if (differenceInDays(timestamp, currentTimestamp) < 1) {
+                data.push({value: Math.round(sensorData[i].mv >= 2 ? ((sensorData[i].mv - 2) / 5) * 10000 : 0), date: parseISO(sensorData[i].timestamp)});
+            }
+        }
+
         return (
             <View style={sharedStyles.standardContainer}>
                 {/* Create a horizontal scroll view for the menu and generate
@@ -405,7 +548,7 @@ export default function SensorScreen( {navigation, route} ) {
                     })}
                 </ScrollView></View>}
                 <ScrollView style={sharedStyles.standardContainer} contentContainerStyle={sharedStyles.contentContainer}>
-                    <Text style={styles.TitleText}>Sensor data as of {timestamp}:</Text>
+                    <Text style={styles.TitleText}>Sensor data as of {format(timestamp, "dddd, mmmm dS, yyyy, h:MM:ss TT")}:</Text>
                     <SensorGauge header={"Methane level"} value={methanePPM} minValue={0} maxValue={10000} valueUnit={" ppm"} colourScheme={MethaneColours}/>
                     <Text style={styles.SubText}>Range in last 30 minutes: {methanePPMMin} ppm - {methanePPMMax} ppm</Text>
                     <SensorGauge header={"Humidity"} value={h} minValue={0} maxValue={100} valueUnit={"%"} colourScheme={HumidityColours}/>
@@ -413,7 +556,8 @@ export default function SensorScreen( {navigation, route} ) {
                         <SensorTemp header={"Sensor temperature"} value={st} minValue={0} maxValue={100} valueUnit={"°C"}/>
                         <SensorTemp header={"External temperature"} value={et} minValue={0} maxValue={100} valueUnit={"°C"}/>
                     </View>
-                    </ScrollView>
+                    <MethaneGraph header={"Methane readings over the last day"} data={data} dateFormat={"HH:mm"}/>
+                </ScrollView>
             </View>
         );
     }
@@ -501,6 +645,39 @@ const styles = StyleSheet.create({
         paddingRight: 30,
         height: 50,
         borderWidth: 3,
-        borderRadius: 10,
+        borderRadius: 10
     },
+    MethaneGraphContainer: {
+        height: 300,
+        padding: 10,
+        flexDirection: 'row'
+    },
+    MethaneGraphYAxisLabelContainer: {
+        width: 14,
+        justifyContent: "center",
+        marginBottom: 30
+    },
+    // Translation position based off:
+    // https://medium.com/@therealmaarten/how-to-layout-rotated-text-in-react-native-6d55b7d71ca5
+    MethaneGraphYAxisLabel: {
+        transform: [{ rotate: "90deg" }, { translateY: 29.5 }],
+        width: 65,
+        fontWeight: 'bold'
+    },
+    MethaneGraphYAxis: {
+        marginBottom: 30
+    },
+    MethaneGraphContainerInside: {
+        flex: 1,
+        marginLeft: 10
+    },
+    MethaneGraphXAxis: {
+        marginHorizontal: -10,
+        height: 10
+    },
+    MethaneGraphXAxisLabel: {
+        textAlign: "center",
+        height: 20,
+        fontWeight: 'bold'
+    }
 });

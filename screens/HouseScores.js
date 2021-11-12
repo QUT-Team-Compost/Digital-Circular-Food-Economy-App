@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { StyleSheet, Text, View, Image, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { sharedStyles, dprint, VerticalBarChart } from '../components/SharedComponents.js';
+import { sharedStyles, dprint, VerticalBarGraph } from '../components/SharedComponents.js';
 import { useState, Component, useEffect } from 'react';
 import axios from 'axios';
 import { BarCodeScanner } from 'expo-barcode-scanner';
@@ -255,7 +255,7 @@ export class HouseScoreGraph extends Component {
         // creates a row of house logoes underneath the graph.
         return(<View style={sharedStyles.standardContainer}>
             <Text style={sharedStyles.bannerText}>Here are the current scores for each of the houses:</Text>
-            <VerticalBarChart data={graphData} height={Dimensions.get('window').height * 0.6}/>
+            <VerticalBarGraph data={graphData} height={Dimensions.get('window').height * 0.6}/>
             <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
                 {houses.map(house => (<Image source={house.image}style={{ width: "25%", height: 60, resizeMode: 'contain', }} />))}
             </View>

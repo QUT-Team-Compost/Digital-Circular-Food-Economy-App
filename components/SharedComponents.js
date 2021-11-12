@@ -359,12 +359,12 @@ export function displayErrorMessage(error, axios) {
 }
 
 //Modified from https://github.com/JesperLekland/react-native-svg-charts-examples/blob/master/storybook/stories/bar-chart/vertical-with-labels.js
-// A component that draws a vertical bar chart with labels, using
+// A component that draws a vertical bar graph with labels, using
 // react-native-svg-charts.
 // Expects the following props: 
 // - data: the data for the graph.
 // - height: the height of the graph.
-class VerticalBarChart extends Component {
+class VerticalBarGraph extends Component {
 
     render() {
         const data = this.props.data;
@@ -405,7 +405,7 @@ class VerticalBarChart extends Component {
     }
 }
 
-export { VerticalBarChart };
+export { VerticalBarGraph };
 
 // Styles specifically used to create the collapsible list component.
 const CL_styles = StyleSheet.create({
