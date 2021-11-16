@@ -10,10 +10,11 @@ import { useState, useEffect } from 'react';
 import RNSpeedometer from 'react-native-speedometer'
 import Svg, {
     Rect,
-    Line
+    Line,
+    G
 } from 'react-native-svg';
 import axios from 'axios';
-import { XAxis, YAxis, Grid, LineChart } from 'react-native-svg-charts'
+import { XAxis, YAxis, LineChart } from 'react-native-svg-charts'
 import * as scale from 'd3-scale'
 import * as shape from 'd3-shape'
 import {format, differenceInDays, parseISO} from 'date-fns'
@@ -191,6 +192,69 @@ function MethaneGraph (props) {
     const data = props.data;
     const dateFormat = props.dateFormat ? props.dateFormat : "MMM d";
 
+    // Creates a grid to display behind the graph.
+    // Grid based on: https://github.com/JesperLekland/react-native-svg-charts/issues/90#issuecomment-374684648
+    const CustomGrid = ({ x, y, data, ticks }) => {
+        const xValues = data.map((item, index) => item.date)
+        const xTicks = scale.scaleTime()
+                .domain(xValues)
+                .ticks(4)
+
+        return(
+            <G>
+                {
+                        // Horizontal grid
+                        ticks.map(tick => (
+                            <Line
+                                key={ tick }
+                            x1={ '0%' }
+                                x2={ '100%' }
+                                y1={ y(tick) }
+                            y2={ y(tick) }
+                                stroke={ 'rgba(0,0,0,0.2)' }
+                            />
+                        ))
+                    }
+                    {
+                        // Vertical grid
+                        xTicks.map((value, index) => {
+                            return (
+                            <Line
+                                key={ index }
+                                y1={ '0%' }
+                                y2={ '100%' }
+                                x1={ x(value) }
+                                x2={ x(value) }
+                                stroke={ 'rgba(0,0,0,0.2)' }
+                            />
+                            )
+                        })
+                    }
+                {
+                    // Lines for top and bottom.
+                    <Line
+                        key={"bottom"}
+                        y1={'100%'}
+                        y2={'100%'}
+                        x1={ '0%' }
+                        x2={ '100%' }
+                        stroke={'rgba(0,0,0,0.2)'}
+                    />
+                }
+                {
+                    <Line
+                        key={"top"}
+                        y1={'0%'}
+                        y2={'0%'}
+                        x1={ '0%' }
+                        x2={ '100%' }
+                        stroke={'rgba(0,0,0,0.2)'}
+                    />
+                }
+            </G>
+        )
+    }
+
     return (
         <View style={styles.outsideContainer}>
             <Text style={styles.SensorHeaderText}>{header}</Text>
@@ -217,7 +281,6 @@ function MethaneGraph (props) {
                     }}
                     yAccessor={ ({ item }) => item.value }
                     formatLabel={ (value) => `${value} ppm`}
-                    numberOfTicks={ 6 }
                 />
 
                 {/* Container for line graph and X axis. */}
@@ -227,7 +290,12 @@ function MethaneGraph (props) {
                     <LineChart
                         style={{ flex: 1 }}
                         data={data}
-                        contentInset={{ top: 10, bottom: 10 }}
+                        contentInset={{
+                            top: 10,
+                            bottom: 10,
+                            left: 15,
+                            right: 45
+                         }}
                         svg={{
                             stroke: 'rgb(134, 65, 244)',
                             strokeWidth: 3
@@ -237,7 +305,7 @@ function MethaneGraph (props) {
                         xScale={ scale.scaleTime }
                         curve={ shape.curveLinear }
                     >
-                        <Grid/>
+                        <CustomGrid belowChart={true}/>
                     </LineChart>
 
                     {/* X axis value lables and ticks. */}
@@ -246,8 +314,8 @@ function MethaneGraph (props) {
                         data={data}
                         formatLabel={(value, index) => index}
                         contentInset={{
-                            left: 10,
-                            right: 10
+                            left: 15,
+                            right: 45
                         }}
                         svg={{
                             fontSize: 10,
@@ -256,7 +324,7 @@ function MethaneGraph (props) {
                         xAccessor={ ({ item }) => item.date }
                         scale={ scale.scaleTime }
                         formatLabel={ (value) => format(value, dateFormat) }
-                        numberOfTicks={ 6 }
+                        numberOfTicks = { 4 }
                     />
 
                     {/* Label for X axis. */}
@@ -548,7 +616,7 @@ export default function SensorScreen( {navigation, route} ) {
                     })}
                 </ScrollView></View>}
                 <ScrollView style={sharedStyles.standardContainer} contentContainerStyle={sharedStyles.contentContainer}>
-                    <Text style={styles.TitleText}>Sensor data as of {format(timestamp, "dddd, mmmm dS, yyyy, h:MM:ss TT")}:</Text>
+                    <Text style={styles.TitleText}>Sensor data at {format(timestamp, "hh:mm b")} on {format(timestamp, "MMMM do")}:</Text>
                     <SensorGauge header={"Methane level"} value={methanePPM} minValue={0} maxValue={10000} valueUnit={" ppm"} colourScheme={MethaneColours}/>
                     <Text style={styles.SubText}>Range in last 30 minutes: {methanePPMMin} ppm - {methanePPMMax} ppm</Text>
                     <SensorGauge header={"Humidity"} value={h} minValue={0} maxValue={100} valueUnit={"%"} colourScheme={HumidityColours}/>
@@ -556,7 +624,9 @@ export default function SensorScreen( {navigation, route} ) {
                         <SensorTemp header={"Sensor temperature"} value={st} minValue={0} maxValue={100} valueUnit={"°C"}/>
                         <SensorTemp header={"External temperature"} value={et} minValue={0} maxValue={100} valueUnit={"°C"}/>
                     </View>
-                    <MethaneGraph header={"Methane readings over the last day"} data={data} dateFormat={"HH:mm"}/>
+                    {/* Only show the methane graph if there's more than one
+                    data point from the last day. */}
+                    {data.length > 1 && <MethaneGraph header={"Methane readings over the last day"} data={data} dateFormat={"hh:mm b"}/>}
                 </ScrollView>
             </View>
         );
@@ -672,12 +742,13 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },
     MethaneGraphXAxis: {
-        marginHorizontal: -10,
-        height: 10
+        height: 8,
+        marginLeft: 10,
+        marginRight: -10,
+        marginTop: 2
     },
     MethaneGraphXAxisLabel: {
         textAlign: "center",
-        height: 20,
-        fontWeight: 'bold'
+        height: 20
     }
 });
