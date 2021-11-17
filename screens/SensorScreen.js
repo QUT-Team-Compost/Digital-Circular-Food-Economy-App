@@ -8,11 +8,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { sharedStyles, dprint } from '../components/SharedComponents.js';
 import { useState, useEffect } from 'react';
 import RNSpeedometer from 'react-native-speedometer'
-import Svg, {
-    Rect,
-    Line,
-    G
-} from 'react-native-svg';
+import Svg, { Rect, Line, G, Circle, Text as SvgText } from 'react-native-svg';
 import axios from 'axios';
 import { XAxis, YAxis, LineChart } from 'react-native-svg-charts'
 import * as scale from 'd3-scale'
@@ -188,9 +184,34 @@ function SensorTemp (props) {
 //            date object.
 // - dateFormat: A string to format the date. If not given, defaults to "MMM d"
 function MethaneGraph (props) {
+
+    // Get the values of the props.
     const header = props.header;
     const data = props.data;
     const dateFormat = props.dateFormat ? props.dateFormat : "MMM d";
+
+    // Specifications used for the graph.
+    const numberOfTicks = 4;
+    const axisSvg = {
+        fontSize: 10,
+        fill: 'grey'
+    };
+    const graphSvg = {
+        stroke: 'rgb(134, 65, 244)',
+        strokeWidth: 3
+    };
+    const xContentInsert = {
+        left: 15,
+        right: 45
+    };
+    const yContentInsert = {
+        top: 10,
+        bottom: 10
+    };
+    const graphContentInsert = {...xContentInsert, ...yContentInsert};
+
+    // Stores the currently tapped data point.
+    const [selectedPoint, setSelectedPoint] = useState(-1);
 
     // Creates a grid to display behind the graph.
     // Grid based on: https://github.com/JesperLekland/react-native-svg-charts/issues/90#issuecomment-374684648
@@ -198,66 +219,143 @@ function MethaneGraph (props) {
         const xValues = data.map((item, index) => item.date)
         const xTicks = scale.scaleTime()
                 .domain(xValues)
-                .ticks(4)
+                .ticks(numberOfTicks)
 
         return(
-            <G>
-                {
-                        // Horizontal grid
-                        ticks.map(tick => (
-                            <Line
-                                key={ tick }
-                            x1={ '0%' }
-                                x2={ '100%' }
-                                y1={ y(tick) }
-                            y2={ y(tick) }
-                                stroke={ 'rgba(0,0,0,0.2)' }
-                            />
-                        ))
+            <G
+                // If the user presses on an empty space on the graph, hide the
+                // toolip if there's any.
+                onPress={ () => {
+                    if (selectedPoint !== -1) {
+                        dprint("Background tapped while a tooltip is visible - removing it.");
+                        setSelectedPoint(-1);
                     }
-                    {
-                        // Vertical grid
-                        xTicks.map((value, index) => {
-                            return (
-                            <Line
-                                key={ index }
-                                y1={ '0%' }
-                                y2={ '100%' }
-                                x1={ x(value) }
-                                x2={ x(value) }
-                                stroke={ 'rgba(0,0,0,0.2)' }
-                            />
-                            )
-                        })
-                    }
+                }}
+            >
                 {
-                    // Lines for top and bottom.
-                    <Line
-                        key={"bottom"}
-                        y1={'100%'}
-                        y2={'100%'}
-                        x1={ '0%' }
-                        x2={ '100%' }
-                        stroke={'rgba(0,0,0,0.2)'}
-                    />
+                    // Background.
+                    <Rect key="background" x={0} y={0} width={"100%"} height={"100%"} fill={ "rgb(255,255,255)" } />
                 }
                 {
-                    <Line
-                        key={"top"}
-                        y1={'0%'}
-                        y2={'0%'}
-                        x1={ '0%' }
-                        x2={ '100%' }
-                        stroke={'rgba(0,0,0,0.2)'}
-                    />
+                    // Horizontal grid
+                    ticks.map(tick => (
+                        <Line key={ tick } x1={ '0%' } x2={ '100%' } y1={ y(tick) } y2={ y(tick) } stroke={ 'rgba(0,0,0,0.2)' } />
+                    ))
+                }
+                {
+                    // Vertical grid
+                    xTicks.map((value, index) => {
+                        return (
+                        <Line key={ index } y1={ '0%' } y2={ '100%' } x1={ x(value) } x2={ x(value) } stroke={ 'rgba(0,0,0,0.2)' } />
+                        )
+                    })
+                }
+                {
+                    // Lines for top and bottom.
+                    <Line key={"bottom"} y1={'100%'} y2={'100%'} x1={ '0%' } x2={ '100%' } stroke={'rgba(0,0,0,0.2)'} />
+                }
+                {
+                    <Line key={"top"} y1={'0%'} y2={'0%'} x1={ '0%' } x2={ '100%' } stroke={'rgba(0,0,0,0.2)'} />
                 }
             </G>
         )
     }
 
+    // Draws a circle at the position of each data point.
+    // Based on: https://github.com/JesperLekland/react-native-svg-charts-examples/blob/master/storybook/stories/decorator.js
+    const DataCircle = ({ x, y, data }) => {
+        return data.map((item, index) => (
+            <Circle
+                key={ index }
+                cx={ x(item.date) }
+                cy={ y(item.value) }
+                r={ 4 }
+
+                // If the user has tapped on this circle and the tooltip is
+                // showing, highlight the cirlce in red.
+                stroke={ item === selectedPoint ? "rgb(255, 0, 0)" : "rgb(134, 65, 244)" }
+                fill={ 'white' }
+
+                // If the user presses on one of the circles, shows a tooltip
+                // showing the corresponding data.
+                onPress={ () => {
+                    dprint(`Point for ${item.date} was tapped.`);
+                    setSelectedPoint(item);
+                }}
+            />
+        ))
+    }
+
+    // A tooltip that shows the PPM and time for a data point.
+    // Partly based on: https://github.com/JesperLekland/react-native-svg-charts-examples/blob/master/storybook/stories/extras.js
+    const Tooltip = ({x, y, height, width}) => {
+
+        // Width and height for the tooltip.
+        const tooltipWidth = 150;
+        const tooltipHeight = 40;
+
+        // Space that should be left between the border of the graph and the
+        // tooltip.
+        const graphBorderSpace = 5;
+
+        // Space that should be left between the circle and the tooltip in the
+        // X direction.
+        const circleSpace = 5;
+
+        // If no data point has been selected, do not render anything.
+        if (selectedPoint === -1) {
+            return null;
+
+        // Otherwise, render a tooltip.
+        } else {
+            // Make sure the X and Y value does not cause the tooltip to be
+            // outside the graph bounds.
+            tooltipX = x(selectedPoint.date) + circleSpace;
+            tooltipY = Math.max(y(selectedPoint.value) - tooltipHeight/2, graphBorderSpace);
+            if (tooltipX + tooltipWidth + graphBorderSpace > width) {
+                tooltipX = x(selectedPoint.date) - tooltipWidth - circleSpace;
+            }
+            if (tooltipY + tooltipHeight + graphBorderSpace > height) {
+                tooltipY = height - tooltipHeight - graphBorderSpace;
+            }
+
+            // Draw the tooltip.
+            return(<G
+                x={ tooltipX }
+                y={ tooltipY }
+                key={ "tooltip" }
+
+                // If the user presses on the tooltip, hide it.
+                onPress={ () => {
+                    dprint(`Tooltip for ${selectedPoint.date} was tapped.`);
+                    setSelectedPoint(-1);
+                }}
+            >
+                <Rect
+                    height={ tooltipHeight }
+                    width={ tooltipWidth }
+                    stroke={ 'grey' }
+                    fill={ 'white' }
+                    ry={ 10 }
+                    rx={ 10 }
+                />
+                <SvgText
+                    x={tooltipWidth/2}
+                    y={tooltipHeight/2}
+                    alignmentBaseline={ 'middle' }
+                    textAnchor={ 'middle' }
+                    stroke={ 'rgb(0, 0, 0)' }
+                >
+                    {`${selectedPoint.value} ppm at ${format(selectedPoint.date, dateFormat)}`}
+                </SvgText>
+            </G>);
+        }
+    }
+
     return (
         <View style={styles.outsideContainer}>
             <Text style={styles.SensorHeaderText}>{header}</Text>
+            <Text style={styles.SubText}>Tap on one of the points to see the exact time and ppm.</Text>
 
             {/* Main container for the graph components. */}
             <View style={styles.MethaneGraphContainer}>
@@ -271,14 +369,8 @@ function MethaneGraph (props) {
                 <YAxis
                     data={data}
                     style={styles.MethaneGraphYAxis}
-                    contentInset={{
-                        top: 10,
-                        bottom: 10
-                    }}
-                    svg={{
-                        fontSize: 10,
-                        fill: 'grey'
-                    }}
+                    contentInset={yContentInsert}
+                    svg={axisSvg}
                     yAccessor={ ({ item }) => item.value }
                     formatLabel={ (value) => `${value} ppm`}
                 />
@@ -290,22 +382,16 @@ function MethaneGraph (props) {
                     <LineChart
                         style={{ flex: 1 }}
                         data={data}
-                        contentInset={{
-                            top: 10,
-                            bottom: 10,
-                            left: 15,
-                            right: 45
-                         }}
-                        svg={{
-                            stroke: 'rgb(134, 65, 244)',
-                            strokeWidth: 3
-                        }}
+                        contentInset={graphContentInsert}
+                        svg={graphSvg}
                         yAccessor={ ({ item }) => item.value }
                         xAccessor={ ({ item }) => item.date }
                         xScale={ scale.scaleTime }
                         curve={ shape.curveLinear }
                     >
                         <CustomGrid belowChart={true}/>
+                        <DataCircle/>
+                        <Tooltip/>
                     </LineChart>
 
                     {/* X axis value lables and ticks. */}
@@ -313,18 +399,12 @@ function MethaneGraph (props) {
                         style={styles.MethaneGraphXAxis}
                         data={data}
                         formatLabel={(value, index) => index}
-                        contentInset={{
-                            left: 15,
-                            right: 45
-                        }}
-                        svg={{
-                            fontSize: 10,
-                            fill: 'grey'
-                        }}
+                        contentInset={xContentInsert}
+                        svg={axisSvg}
                         xAccessor={ ({ item }) => item.date }
                         scale={ scale.scaleTime }
                         formatLabel={ (value) => format(value, dateFormat) }
-                        numberOfTicks = { 4 }
+                        numberOfTicks = {numberOfTicks}
                     />
 
                     {/* Label for X axis. */}
@@ -626,7 +706,7 @@ export default function SensorScreen( {navigation, route} ) {
                     </View>
                     {/* Only show the methane graph if there's more than one
                     data point from the last day. */}
-                    {data.length > 1 && <MethaneGraph header={"Methane readings over the last day"} data={data} dateFormat={"hh:mm b"}/>}
+                    {data.length > 1 && <MethaneGraph header={"Methane readings over the last day"} data={data} dateFormat={"hh:mm a"}/>}
                 </ScrollView>
             </View>
         );
@@ -749,6 +829,7 @@ const styles = StyleSheet.create({
     },
     MethaneGraphXAxisLabel: {
         textAlign: "center",
-        height: 20
+        height: 20,
+        fontWeight: 'bold'
     }
 });
